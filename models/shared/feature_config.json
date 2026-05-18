@@ -1,0 +1,31 @@
+{
+  "feature_names": [
+    "potential_V_norm",
+    "scan_rate_mVs_norm",
+    "log_scan_rate_norm",
+    "sqrt_scan_rate_norm",
+    "potential_from_lower_norm",
+    "potential_from_upper_norm",
+    "sr_x_potential_norm",
+    "direction_x_potential_norm",
+    "sweep_direction",
+    "sweep_position"
+  ],
+  "n_features": 10,
+  "target": "current_uA_norm",
+  "target_units": "normalised (inverse-transform via scalers.json for \u00b5A)",
+  "normalisation": "min-max per feature via scalers.json",
+  "tabular_models": [
+    "rf",
+    "xgboost",
+    "lightgbm",
+    "ann"
+  ],
+  "sequence_models": [
+    "lstm",
+    "gru"
+  ],
+  "sequence_key": "half_sweep_id",
+  "max_seq_len": 651,
+  "mask_value": 0.0
+}

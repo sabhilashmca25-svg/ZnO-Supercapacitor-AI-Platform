@@ -1,0 +1,37 @@
+{
+  "name": "zno-supercapacitor-ai-platform",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "react-router-dom": "^6.23.0",
+    "@mui/material": "^5.15.18",
+    "@mui/icons-material": "^5.15.18",
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@reduxjs/toolkit": "^2.2.4",
+    "react-redux": "^9.1.2",
+    "react-plotly.js": "^2.6.0",
+    "plotly.js": "^2.32.0",
+    "framer-motion": "^11.2.10",
+    "axios": "^1.7.1"
+  },
+  "devDependencies": {
+    "vite": "^5.2.11",
+    "@vitejs/plugin-react": "^4.3.0",
+    "vite-plugin-pwa": "^0.20.0",
+    "typescript": "^5.4.5",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@types/react-plotly.js": "^2.6.3",
+    "@types/plotly.js": "^2.12.29"
+  }
+}

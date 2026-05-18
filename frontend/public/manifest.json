@@ -1,0 +1,41 @@
+{
+  "name": "ZnO Supercapacitor AI Platform",
+  "short_name": "ZnO AI",
+  "description": "Research-grade AI platform for electrochemical CV trajectory prediction using 6 machine learning models.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070b14",
+  "theme_color": "#00d4ff",
+  "orientation": "any",
+  "categories": ["science", "productivity", "research"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Predict CV Curve",
+      "url": "/predict",
+      "description": "Open Prediction Studio"
+    },
+    {
+      "name": "Compare Models",
+      "url": "/compare",
+      "description": "Open Model Comparison"
+    }
+  ]
+}

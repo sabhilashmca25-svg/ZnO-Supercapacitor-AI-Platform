@@ -1,0 +1,239 @@
+{
+  "model": "LightGBM LGBMRegressor",
+  "model_config": {
+    "params": {
+      "objective": "regression",
+      "metric": "rmse",
+      "boosting_type": "gbdt",
+      "n_estimators": 2000,
+      "learning_rate": 0.03,
+      "num_leaves": 63,
+      "max_depth": -1,
+      "min_child_samples": 20,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_alpha": 0.05,
+      "reg_lambda": 1.0,
+      "random_state": 42,
+      "n_jobs": -1,
+      "importance_type": "gain",
+      "verbose": -1
+    },
+    "n_trees_built": 328,
+    "best_iteration": 278,
+    "best_val_rmse_norm": 0.03079365277282584,
+    "train_rmse_at_best": 0.03559055002121635
+  },
+  "metrics": [
+    {
+      "partition": "train (in-sample)",
+      "n_samples": 62400,
+      "RMSE_norm": 0.03559055004502616,
+      "RMSE_uA": 50.926115349119605,
+      "MAE_uA": 33.49574745629271,
+      "MaxErr_uA": 274.78876486244906,
+      "R2": 0.9767631719419093
+    },
+    {
+      "partition": "val  (SR=30 interpolation)",
+      "n_samples": 7800,
+      "RMSE_norm": 0.03079365287044803,
+      "RMSE_uA": 26.857001861640253,
+      "MAE_uA": 21.531860264597423,
+      "MaxErr_uA": 99.32377770697069,
+      "R2": 0.9830946510923046
+    },
+    {
+      "partition": "test_SR (SR=50 interpolation)",
+      "n_samples": 7800,
+      "RMSE_norm": 0.03518268447523262,
+      "RMSE_uA": 44.68710736300409,
+      "MAE_uA": 32.03305726155953,
+      "MaxErr_uA": 152.87805904823685,
+      "R2": 0.976221996721
+    },
+    {
+      "partition": "test_MAT (NM4 extrapolation)",
+      "n_samples": 26000,
+      "RMSE_norm": 0.04049928183780749,
+      "RMSE_uA": 35.1769193970593,
+      "MAE_uA": 27.090593509317134,
+      "MaxErr_uA": 145.4199382562404,
+      "R2": 0.9677954138048973
+    }
+  ],
+  "per_group": {
+    "val": [
+      {
+        "nm_id": "NM1",
+        "scan_rate_mVs": 30.0,
+        "RMSE_uA": 32.18009332410268,
+        "R2": 0.9802399656300875,
+        "partition": "val"
+      },
+      {
+        "nm_id": "NM2",
+        "scan_rate_mVs": 30.0,
+        "RMSE_uA": 19.996127037069453,
+        "R2": 0.9814078945182405,
+        "partition": "val"
+      },
+      {
+        "nm_id": "NM3",
+        "scan_rate_mVs": 30.0,
+        "RMSE_uA": 26.990593623665752,
+        "R2": 0.9873931603438787,
+        "partition": "val"
+      }
+    ],
+    "test_sr": [
+      {
+        "nm_id": "NM1",
+        "scan_rate_mVs": 50.0,
+        "RMSE_uA": 46.51299340055763,
+        "R2": 0.9779616225822674,
+        "partition": "test_sr"
+      },
+      {
+        "nm_id": "NM2",
+        "scan_rate_mVs": 50.0,
+        "RMSE_uA": 14.728498146928144,
+        "R2": 0.993023789558572,
+        "partition": "test_sr"
+      },
+      {
+        "nm_id": "NM3",
+        "scan_rate_mVs": 50.0,
+        "RMSE_uA": 60.08681619684618,
+        "R2": 0.9531812974112804,
+        "partition": "test_sr"
+      }
+    ],
+    "test_mat": [
+      {
+        "nm_id": "NM4",
+        "scan_rate_mVs": 10.0,
+        "RMSE_uA": 17.85972913626285,
+        "R2": 0.94869403587887,
+        "partition": "test_mat"
+      },
+      {
+        "nm_id": "NM4",
+        "scan_rate_mVs": 20.0,
+        "RMSE_uA": 28.72793575811015,
+        "R2": 0.9440690270933288,
+        "partition": "test_mat"
+      },
+      {
+        "nm_id": "NM4",
+        "scan_rate_mVs": 30.0,
+        "RMSE_uA": 39.6828139688936,
+        "R2": 0.9362756711353288,
+        "partition": "test_mat"
+      },
+      {
+        "nm_id": "NM4",
+        "scan_rate_mVs": 40.0,
+        "RMSE_uA": 37.061254865301585,
+        "R2": 0.961370748110812,
+        "partition": "test_mat"
+      },
+      {
+        "nm_id": "NM4",
+        "scan_rate_mVs": 50.0,
+        "RMSE_uA": 40.57308107063603,
+        "R2": 0.9648068332889504,
+        "partition": "test_mat"
+      },
+      {
+        "nm_id": "NM4",
+        "scan_rate_mVs": 60.0,
+        "RMSE_uA": 34.99074800443313,
+        "R2": 0.9789595012709943,
+        "partition": "test_mat"
+      },
+      {
+        "nm_id": "NM4",
+        "scan_rate_mVs": 70.0,
+        "RMSE_uA": 35.46437908409225,
+        "R2": 0.9818337715031531,
+        "partition": "test_mat"
+      },
+      {
+        "nm_id": "NM4",
+        "scan_rate_mVs": 80.0,
+        "RMSE_uA": 35.42014037114117,
+        "R2": 0.9842865694905315,
+        "partition": "test_mat"
+      },
+      {
+        "nm_id": "NM4",
+        "scan_rate_mVs": 90.0,
+        "RMSE_uA": 37.064020388083264,
+        "R2": 0.984762978953486,
+        "partition": "test_mat"
+      },
+      {
+        "nm_id": "NM4",
+        "scan_rate_mVs": 100.0,
+        "RMSE_uA": 39.05192107585352,
+        "R2": 0.9850096087672623,
+        "partition": "test_mat"
+      }
+    ]
+  },
+  "gain_importance": {
+    "direction_x_potential_norm": 25249.793277947116,
+    "potential_V_norm": 9645.418318059503,
+    "sweep_position": 8951.477780568854,
+    "potential_from_upper_norm": 8386.869679517938,
+    "sr_x_potential_norm": 2071.3045817354796,
+    "potential_from_lower_norm": 827.0349984299319,
+    "sweep_direction": 517.0059840245885,
+    "scan_rate_mVs_norm": 453.5415204280471,
+    "log_scan_rate_norm": 62.03976404386049,
+    "sqrt_scan_rate_norm": 30.835025910520926
+  },
+  "permutation_importance": {
+    "potential_V_norm": {
+      "mean": 0.049418767005400384,
+      "std": 0.0005253078947420043
+    },
+    "scan_rate_mVs_norm": {
+      "mean": 0.0,
+      "std": 0.0
+    },
+    "log_scan_rate_norm": {
+      "mean": 0.0,
+      "std": 0.0
+    },
+    "sqrt_scan_rate_norm": {
+      "mean": 0.0,
+      "std": 0.0
+    },
+    "potential_from_lower_norm": {
+      "mean": 0.0013695232000536703,
+      "std": 6.214571733802005e-05
+    },
+    "potential_from_upper_norm": {
+      "mean": 0.04877169408774432,
+      "std": 0.00036978246223152533
+    },
+    "sr_x_potential_norm": {
+      "mean": 0.01854310160773896,
+      "std": 0.00021844385807167607
+    },
+    "direction_x_potential_norm": {
+      "mean": 0.18931677316616327,
+      "std": 0.0009781675617149743
+    },
+    "sweep_direction": {
+      "mean": 0.003595964351455869,
+      "std": 0.00014883755312833453
+    },
+    "sweep_position": {
+      "mean": 0.043384734654557625,
+      "std": 0.0005540274577283668
+    }
+  }
+}

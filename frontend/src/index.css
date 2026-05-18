@@ -1,0 +1,80 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap");
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #070b14;
+  --bg-surface: #0d1321;
+  --cyan: #00d4ff;
+  --violet: #a78bfa;
+  --emerald: #10b981;
+  --red: #ef4444;
+  --amber: #f59e0b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #475569;
+  --border: rgba(0,212,255,0.1);
+  --card-bg: rgba(13,19,33,0.8);
+  --glass: rgba(255,255,255,0.03);
+}
+
+html { scroll-behavior: smooth; }
+
+html, body, #root {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+.mono { font-family: "JetBrains Mono", "Fira Code", monospace; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.25); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,212,255,0.45); }
+
+::selection { background: rgba(0,212,255,0.25); color: #f1f5f9; }
+
+:focus-visible { outline: 2px solid rgba(0,212,255,0.7); outline-offset: 2px; }
+
+/* Plotly transparent overrides */
+.js-plotly-plot, .js-plotly-plot .plot-container, .plotly-graph-div {
+  background: transparent !important;
+}
+.plotly-graph-div .modebar { background: transparent !important; }
+.plotly-graph-div .modebar-btn path { fill: rgba(0,212,255,0.5) !important; }
+.plotly-graph-div .modebar-btn:hover path { fill: #00d4ff !important; }
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(0,212,255,0.3); }
+  50% { box-shadow: 0 0 24px rgba(0,212,255,0.6), 0 0 48px rgba(0,212,255,0.15); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #00d4ff 0%, #a78bfa 50%, #10b981 100%);
+  background-size: 200% 200%;
+  animation: gradient-shift 5s ease infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

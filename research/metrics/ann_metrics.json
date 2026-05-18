@@ -1,0 +1,256 @@
+{
+  "model": "Dense ANN (TensorFlow/Keras)",
+  "architecture": {
+    "layers": [
+      {
+        "name": "Dense 1",
+        "units": 128,
+        "activation": "relu",
+        "init": "he_normal"
+      },
+      {
+        "name": "Dropout 1",
+        "rate": 0.15
+      },
+      {
+        "name": "Dense 2",
+        "units": 64,
+        "activation": "relu",
+        "init": "he_normal"
+      },
+      {
+        "name": "Dropout 2",
+        "rate": 0.1
+      },
+      {
+        "name": "Dense 3",
+        "units": 32,
+        "activation": "relu",
+        "init": "he_normal"
+      },
+      {
+        "name": "Output",
+        "units": 1,
+        "activation": "linear"
+      }
+    ],
+    "total_params": 11777,
+    "optimizer": "Adam",
+    "learning_rate_initial": 0.001,
+    "loss": "mse",
+    "metrics": [
+      "mae"
+    ]
+  },
+  "training": {
+    "epochs_max": 300,
+    "epochs_ran": 98,
+    "best_epoch": 72,
+    "batch_size": 512,
+    "early_stopping_patience": 25,
+    "reduce_lr_patience": 10,
+    "reduce_lr_factor": 0.5,
+    "best_val_mse": 0.002946970984339714,
+    "best_val_rmse_norm": 0.054286010945175496
+  },
+  "metrics": [
+    {
+      "partition": "train (in-sample)",
+      "n_samples": 62400,
+      "RMSE_norm": 0.056020514099627744,
+      "RMSE_uA": 75.15017168615164,
+      "MAE_uA": 46.74325110722648,
+      "MaxErr_uA": 381.2026938796043,
+      "R2": 0.9424292848617081
+    },
+    {
+      "partition": "val  (SR=30 interpolation)",
+      "n_samples": 7800,
+      "RMSE_norm": 0.05428601070165207,
+      "RMSE_uA": 49.926343643180786,
+      "MAE_uA": 35.37601020563733,
+      "MaxErr_uA": 176.83467446565635,
+      "R2": 0.947461511435396
+    },
+    {
+      "partition": "test_SR (SR=50 interpolation)",
+      "n_samples": 7800,
+      "RMSE_norm": 0.05247016209323476,
+      "RMSE_uA": 63.61178789204063,
+      "MAE_uA": 44.21414995194167,
+      "MaxErr_uA": 209.61445778608328,
+      "R2": 0.9471138141006525
+    },
+    {
+      "partition": "test_MAT (NM4 extrapolation)",
+      "n_samples": 26000,
+      "RMSE_norm": 0.04481270645412587,
+      "RMSE_uA": 46.15677538991304,
+      "MAE_uA": 30.05631345188315,
+      "MaxErr_uA": 223.91524326801297,
+      "R2": 0.9605701225738683
+    }
+  ],
+  "per_group": {
+    "val": [
+      {
+        "nm_id": "NM1",
+        "scan_rate_mVs": 30.0,
+        "RMSE_uA": 68.35972486707962,
+        "R2": 0.9108310383574052,
+        "partition": "val"
+      },
+      {
+        "nm_id": "NM2",
+        "scan_rate_mVs": 30.0,
+        "RMSE_uA": 24.891070422356574,
+        "R2": 0.9711912810110229,
+        "partition": "val"
+      },
+      {
+        "nm_id": "NM3",
+        "scan_rate_mVs": 30.0,
+        "RMSE_uA": 46.74721379994104,
+        "R2": 0.9621824996869959,
+        "partition": "val"
+      }
+    ],
+    "test_sr": [
+      {
+        "nm_id": "NM1",
+        "scan_rate_mVs": 50.0,
+        "RMSE_uA": 93.57357498485828,
+        "R2": 0.9108056221686479,
+        "partition": "test_sr"
+      },
+      {
+        "nm_id": "NM2",
+        "scan_rate_mVs": 50.0,
+        "RMSE_uA": 31.784208206525552,
+        "R2": 0.9675118158698226,
+        "partition": "test_sr"
+      },
+      {
+        "nm_id": "NM3",
+        "scan_rate_mVs": 50.0,
+        "RMSE_uA": 48.7147703443549,
+        "R2": 0.9692261163085306,
+        "partition": "test_sr"
+      }
+    ],
+    "test_mat": [
+      {
+        "nm_id": "NM4",
+        "scan_rate_mVs": 10.0,
+        "RMSE_uA": 16.14456145945809,
+        "R2": 0.9580752364128495,
+        "partition": "test_mat"
+      },
+      {
+        "nm_id": "NM4",
+        "scan_rate_mVs": 20.0,
+        "RMSE_uA": 25.743843752958735,
+        "R2": 0.9550851127544098,
+        "partition": "test_mat"
+      },
+      {
+        "nm_id": "NM4",
+        "scan_rate_mVs": 30.0,
+        "RMSE_uA": 30.78143893904302,
+        "R2": 0.9616576979634927,
+        "partition": "test_mat"
+      },
+      {
+        "nm_id": "NM4",
+        "scan_rate_mVs": 40.0,
+        "RMSE_uA": 35.39350398516762,
+        "R2": 0.9647691454195212,
+        "partition": "test_mat"
+      },
+      {
+        "nm_id": "NM4",
+        "scan_rate_mVs": 50.0,
+        "RMSE_uA": 40.46589689193668,
+        "R2": 0.9649925311960155,
+        "partition": "test_mat"
+      },
+      {
+        "nm_id": "NM4",
+        "scan_rate_mVs": 60.0,
+        "RMSE_uA": 45.08250693110044,
+        "R2": 0.9650726454395038,
+        "partition": "test_mat"
+      },
+      {
+        "nm_id": "NM4",
+        "scan_rate_mVs": 70.0,
+        "RMSE_uA": 49.407240370329916,
+        "R2": 0.9647417099870861,
+        "partition": "test_mat"
+      },
+      {
+        "nm_id": "NM4",
+        "scan_rate_mVs": 80.0,
+        "RMSE_uA": 54.018067429175744,
+        "R2": 0.9634532688346852,
+        "partition": "test_mat"
+      },
+      {
+        "nm_id": "NM4",
+        "scan_rate_mVs": 90.0,
+        "RMSE_uA": 59.89824587381952,
+        "R2": 0.9602054843014216,
+        "partition": "test_mat"
+      },
+      {
+        "nm_id": "NM4",
+        "scan_rate_mVs": 100.0,
+        "RMSE_uA": 74.59317374620211,
+        "R2": 0.9453076816506175,
+        "partition": "test_mat"
+      }
+    ]
+  },
+  "feature_importance_permutation": {
+    "potential_V_norm": {
+      "mean": 0.03962682537079535,
+      "std": 0.000534537791525237
+    },
+    "scan_rate_mVs_norm": {
+      "mean": 0.0,
+      "std": 0.0
+    },
+    "log_scan_rate_norm": {
+      "mean": 0.0,
+      "std": 0.0
+    },
+    "sqrt_scan_rate_norm": {
+      "mean": 0.0,
+      "std": 0.0
+    },
+    "potential_from_lower_norm": {
+      "mean": 0.05807426704640591,
+      "std": 0.0005118925282980797
+    },
+    "potential_from_upper_norm": {
+      "mean": 0.05424588576771673,
+      "std": 0.0006034762369001608
+    },
+    "sr_x_potential_norm": {
+      "mean": 0.006500348659518186,
+      "std": 0.00026037739644307856
+    },
+    "direction_x_potential_norm": {
+      "mean": 0.04838384445734935,
+      "std": 0.0007790022471212411
+    },
+    "sweep_direction": {
+      "mean": 0.17105870686362395,
+      "std": 0.0018933509932009733
+    },
+    "sweep_position": {
+      "mean": 0.04590327541014335,
+      "std": 0.0008240111542710793
+    }
+  }
+}

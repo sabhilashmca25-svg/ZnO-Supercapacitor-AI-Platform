@@ -1,0 +1,41 @@
+{
+  "version": "1.0.0",
+  "models": {
+    "rf": {
+      "file": "models/rf/rf_baseline.joblib",
+      "loader": "joblib"
+    },
+    "xgboost": {
+      "file": "models/xgboost/xgboost_model.joblib",
+      "loader": "joblib"
+    },
+    "lightgbm": {
+      "file": "models/lightgbm/lightgbm_model.joblib",
+      "loader": "joblib"
+    },
+    "ann": {
+      "file": "models/ann/ann_model.keras",
+      "loader": "keras"
+    },
+    "lstm": {
+      "file": "models/lstm/lstm_model.keras",
+      "loader": "keras"
+    },
+    "gru": {
+      "file": "models/gru/gru_model.keras",
+      "loader": "keras"
+    }
+  },
+  "scalers_file": "models/shared/scalers/scalers.json",
+  "feature_config": "models/shared/feature_config.json",
+  "sequence_models": [
+    "lstm",
+    "gru"
+  ],
+  "tabular_models": [
+    "rf",
+    "xgboost",
+    "lightgbm",
+    "ann"
+  ]
+}

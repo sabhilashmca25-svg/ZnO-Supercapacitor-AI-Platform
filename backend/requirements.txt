@@ -1,0 +1,40 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  ZnO Supercapacitor AI Platform — Python dependencies
+#  Compatible with Python 3.13+  (updated from original Python 3.12 pins)
+#
+#  Why version ranges instead of strict pins?
+#  Python 3.13 was released Oct 2024. The original pins (tensorflow==2.16.1,
+#  numpy==1.26.4, scikit-learn==1.4.2) only have wheels for Python ≤3.12.
+#  Using >=min,<next-major lets pip pick the newest compatible wheel.
+#
+#  Install:
+#    pip install -r requirements.txt
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Web framework ─────────────────────────────────────────────────────────────
+fastapi>=0.111.0,<1.0
+uvicorn[standard]>=0.29.0,<1.0
+python-multipart>=0.0.9,<1.0      # required for form uploads
+
+# ── Pydantic v2 ───────────────────────────────────────────────────────────────
+pydantic>=2.7.1,<3.0
+pydantic-settings>=2.2.1,<3.0
+
+# ── ML / tree-based models ────────────────────────────────────────────────────
+scikit-learn>=1.5.0,<2.0           # 1.5+ has Python 3.13 wheels
+xgboost>=2.0.3,<3.0
+lightgbm>=4.3.0,<5.0
+joblib>=1.4.0,<2.0                 # used to load .joblib model files
+
+# ── Deep learning (GRU / LSTM / ANN models) ──────────────────────────────────
+# TF 2.18+ has Python 3.13 wheels; TF 2.20 is the latest stable as of 2025.
+tensorflow>=2.18.0,<3.0
+
+# ── Numerical / data ─────────────────────────────────────────────────────────
+# NumPy 2.0+ has Python 3.13 wheels. np.trapz was removed in 2.0 → use np.trapezoid
+numpy>=2.0.0,<3.0
+pandas>=2.2.2,<3.0
+pyarrow>=16.0.0,<20.0              # for reading .parquet files
+
+# ── Testing & HTTP client ─────────────────────────────────────────────────────
+httpx>=0.27.0,<1.0                 # used to call the API in test scripts

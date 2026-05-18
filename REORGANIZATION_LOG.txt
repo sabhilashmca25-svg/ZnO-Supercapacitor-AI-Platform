@@ -1,0 +1,372 @@
+
+======================================================================
+STEP 1 — Creating directory skeleton
+======================================================================
+  Created 65 directories.
+
+======================================================================
+STEP 2 — Data files  →  data/processed/
+======================================================================
+  [COPY] master_long_format.parquet  →  data\processed\master_long_format.parquet
+  [COPY] scalers.json  →  data\processed\scalers.json
+  [COPY] test_material.parquet  →  data\processed\test_material.parquet
+  [COPY] test_scanrate.parquet  →  data\processed\test_scanrate.parquet
+  [COPY] train_set.parquet  →  data\processed\train_set.parquet
+  [COPY] val_set.parquet  →  data\processed\val_set.parquet
+
+======================================================================
+STEP 3 — Notebooks  →  research/notebooks/
+======================================================================
+  [COPY] 01_correct_preprocessing.ipynb  →  research\notebooks\01_correct_preprocessing.ipynb
+  [COPY] 02_rf_baseline.ipynb  →  research\notebooks\02_rf_baseline.ipynb
+  [COPY] 03_xgboost_model.ipynb  →  research\notebooks\03_xgboost_model.ipynb
+  [COPY] 04_ann_model.ipynb  →  research\notebooks\04_ann_model.ipynb
+  [COPY] 05_lstm_model.ipynb  →  research\notebooks\05_lstm_model.ipynb
+  [COPY] 06_gru_model.ipynb  →  research\notebooks\06_gru_model.ipynb
+  [COPY] 07_lightgbm_model.ipynb  →  research\notebooks\07_lightgbm_model.ipynb
+  [COPY] 08_final_comparison.ipynb  →  research\notebooks\08_final_comparison.ipynb
+
+======================================================================
+STEP 4 — Builder scripts  →  src/notebooks/
+======================================================================
+  [COPY] build_ann_notebook.py  →  src\notebooks\build_ann_notebook.py
+  [COPY] build_final_comparison_notebook.py  →  src\notebooks\build_final_comparison_notebook.py
+  [COPY] build_gru_notebook.py  →  src\notebooks\build_gru_notebook.py
+  [COPY] build_lightgbm_notebook.py  →  src\notebooks\build_lightgbm_notebook.py
+  [COPY] build_lstm_notebook.py  →  src\notebooks\build_lstm_notebook.py
+  [COPY] build_notebook.py  →  src\notebooks\build_preprocessing_notebook.py
+  [COPY] build_rf_notebook.py  →  src\notebooks\build_rf_notebook.py
+  [COPY] build_xgboost_notebook.py  →  src\notebooks\build_xgboost_notebook.py
+
+======================================================================
+STEP 5 — Preprocessing figures  →  research/figures/preprocessing/
+======================================================================
+  [COPY] 01_sweep_direction_verification.png  →  research\figures\preprocessing\01_sweep_direction_verification.png
+  [COPY] 02_cv_loops_all_scanrates.png  →  research\figures\preprocessing\02_cv_loops_all_scanrates.png
+  [COPY] 03_material_comparison.png  →  research\figures\preprocessing\03_material_comparison.png
+  [COPY] 04_sequential_structure.png  →  research\figures\preprocessing\04_sequential_structure.png
+  [COPY] 05_current_distributions.png  →  research\figures\preprocessing\05_current_distributions.png
+  [COPY] 06_scanrate_scaling.png  →  research\figures\preprocessing\06_scanrate_scaling.png
+  [COPY] 07_split_map.png  →  research\figures\preprocessing\07_train_val_test_split_map.png
+  [COPY] 08_normalised_curves.png  →  research\figures\preprocessing\08_normalised_cv_curves.png
+
+======================================================================
+STEP 6 — RF artefacts
+======================================================================
+  [COPY] rf_baseline_model.joblib  →  models\rf\rf_baseline.joblib
+  [COPY] rf_baseline_metrics.json  →  research\metrics\rf_baseline_metrics.json
+  [COPY] per_group_rmse_val.csv  →  research\per_group_csv\rf\per_group_rmse_val.csv
+  [COPY] per_group_rmse_test_sr.csv  →  research\per_group_csv\rf\per_group_rmse_test_sr.csv
+  [COPY] per_group_rmse_test_mat.csv  →  research\per_group_csv\rf\per_group_rmse_test_mat.csv
+  [COPY] 00_feature_correlation.png  →  research\figures\rf\00_feature_correlation.png
+  [COPY] 01_cv_curves_val.png  →  research\figures\rf\01_cv_curves_val.png
+  [COPY] 02_cv_curves_test_sr.png  →  research\figures\rf\02_cv_curves_test_sr.png
+  [COPY] 03_cv_curves_test_mat.png  →  research\figures\rf\03_cv_curves_test_mat.png
+  [COPY] 04_parity_plots.png  →  research\figures\rf\04_parity_plots.png
+  [COPY] 05_residual_distributions.png  →  research\figures\rf\05_residual_distributions.png
+  [COPY] 06_residual_vs_potential.png  →  research\figures\rf\06_residual_vs_potential.png
+  [COPY] 07_feature_importance.png  →  research\figures\rf\07_feature_importance_mdi_permutation.png
+  [COPY] 08_per_group_rmse.png  →  research\figures\rf\08_per_group_rmse.png
+  [COPY] 09_nm4_scan_rate_trend.png  →  research\figures\rf\09_nm4_scan_rate_trend.png
+
+======================================================================
+STEP 7 — XGBoost artefacts
+======================================================================
+  [COPY] xgboost_model.joblib  →  models\xgboost\xgboost_model.joblib
+  [COPY] xgboost_booster.json  →  models\xgboost\xgboost_booster.json
+  [COPY] xgboost_metrics.json  →  research\metrics\xgboost_metrics.json
+  [COPY] per_group_rmse_test_mat.csv  →  research\per_group_csv\xgboost\per_group_rmse_test_mat.csv
+  [COPY] per_group_rmse_test_sr.csv  →  research\per_group_csv\xgboost\per_group_rmse_test_sr.csv
+  [COPY] per_group_rmse_val.csv  →  research\per_group_csv\xgboost\per_group_rmse_val.csv
+  [COPY] 00_feature_correlation.png  →  research\figures\xgboost\00_feature_correlation.png
+  [COPY] 01_cv_curves_val.png  →  research\figures\xgboost\01_cv_curves_val.png
+  [COPY] 02_cv_curves_test_sr.png  →  research\figures\xgboost\02_cv_curves_test_sr.png
+  [COPY] 03_cv_curves_test_mat.png  →  research\figures\xgboost\03_cv_curves_test_mat.png
+  [COPY] 04_parity_plots.png  →  research\figures\xgboost\04_parity_plots.png
+  [COPY] 05_residual_distributions.png  →  research\figures\xgboost\05_residual_distributions.png
+  [COPY] 06_residual_vs_potential.png  →  research\figures\xgboost\06_residual_vs_potential.png
+  [COPY] 07_feature_importance.png  →  research\figures\xgboost\07_feature_importance.png
+  [COPY] 08_per_group_rmse.png  →  research\figures\xgboost\08_per_group_rmse.png
+  [COPY] 09_nm4_scan_rate_trend.png  →  research\figures\xgboost\09_nm4_scan_rate_trend.png
+  [COPY] xgb_training_curve.png  →  research\figures\xgboost\10_training_curve.png
+
+======================================================================
+STEP 8 — ANN artefacts
+======================================================================
+  [COPY] ann_model.keras  →  models\ann\ann_model.keras
+  [COPY] training_history.json  →  research\training_histories\ann_training_history.json
+  [COPY] ann_metrics.json  →  research\metrics\ann_metrics.json
+  [COPY] per_group_rmse_test_mat.csv  →  research\per_group_csv\ann\per_group_rmse_test_mat.csv
+  [COPY] per_group_rmse_test_sr.csv  →  research\per_group_csv\ann\per_group_rmse_test_sr.csv
+  [COPY] per_group_rmse_val.csv  →  research\per_group_csv\ann\per_group_rmse_val.csv
+  [COPY] 00_feature_correlation.png  →  research\figures\ann\00_feature_correlation.png
+  [COPY] 01_ann_training_curve.png  →  research\figures\ann\01_training_curve.png
+  [COPY] 02_cv_curves_val.png  →  research\figures\ann\02_cv_curves_val.png
+  [COPY] 03_cv_curves_test_sr.png  →  research\figures\ann\03_cv_curves_test_sr.png
+  [COPY] 04_cv_curves_test_mat.png  →  research\figures\ann\04_cv_curves_test_mat.png
+  [COPY] 05_parity_plots.png  →  research\figures\ann\05_parity_plots.png
+  [COPY] 06_residual_distributions.png  →  research\figures\ann\06_residual_distributions.png
+  [COPY] 07_residual_vs_potential.png  →  research\figures\ann\07_residual_vs_potential.png
+  [COPY] 08_ann_feature_importance.png  →  research\figures\ann\08_feature_importance_permutation.png
+  [COPY] 09_per_group_rmse.png  →  research\figures\ann\09_per_group_rmse.png
+  [COPY] 10_nm4_scan_rate_trend.png  →  research\figures\ann\10_nm4_scan_rate_trend.png
+
+======================================================================
+STEP 9 — LSTM artefacts
+======================================================================
+  [COPY] lstm_model.keras  →  models\lstm\lstm_model.keras
+  [COPY] training_history.json  →  research\training_histories\lstm_training_history.json
+  [COPY] lstm_metrics.json  →  research\metrics\lstm_metrics.json
+  [COPY] per_group_rmse_test_mat.csv  →  research\per_group_csv\lstm\per_group_rmse_test_mat.csv
+  [COPY] per_group_rmse_test_sr.csv  →  research\per_group_csv\lstm\per_group_rmse_test_sr.csv
+  [COPY] per_group_rmse_val.csv  →  research\per_group_csv\lstm\per_group_rmse_val.csv
+  [COPY] 00_sequence_construction.png  →  research\figures\lstm\00_sequence_construction.png
+  [COPY] 01_lstm_training_curve.png  →  research\figures\lstm\01_training_curve.png
+  [COPY] 02_cv_curves_val.png  →  research\figures\lstm\02_cv_curves_val.png
+  [COPY] 03_cv_curves_test_sr.png  →  research\figures\lstm\03_cv_curves_test_sr.png
+  [COPY] 04_cv_curves_test_mat.png  →  research\figures\lstm\04_cv_curves_test_mat.png
+  [COPY] 05_parity_plots.png  →  research\figures\lstm\05_parity_plots.png
+  [COPY] 06_residual_distributions.png  →  research\figures\lstm\06_residual_distributions.png
+  [COPY] 07_residual_vs_potential.png  →  research\figures\lstm\07_residual_vs_potential.png
+  [COPY] 08_lstm_feature_importance.png  →  research\figures\lstm\08_feature_importance_permutation.png
+  [COPY] 09_per_group_rmse.png  →  research\figures\lstm\09_per_group_rmse.png
+  [COPY] 10_nm4_scan_rate_trend.png  →  research\figures\lstm\10_nm4_scan_rate_trend.png
+
+======================================================================
+STEP 10 — GRU artefacts
+======================================================================
+  [COPY] gru_model.keras  →  models\gru\gru_model.keras
+  [COPY] training_history.json  →  research\training_histories\gru_training_history.json
+  [COPY] gru_metrics.json  →  research\metrics\gru_metrics.json
+  [COPY] per_group_rmse_test_mat.csv  →  research\per_group_csv\gru\per_group_rmse_test_mat.csv
+  [COPY] per_group_rmse_test_sr.csv  →  research\per_group_csv\gru\per_group_rmse_test_sr.csv
+  [COPY] per_group_rmse_val.csv  →  research\per_group_csv\gru\per_group_rmse_val.csv
+  [COPY] 00_sequence_construction.png  →  research\figures\gru\00_sequence_construction.png
+  [COPY] 01_gru_training_curve.png  →  research\figures\gru\01_training_curve.png
+  [COPY] 02_cv_curves_val.png  →  research\figures\gru\02_cv_curves_val.png
+  [COPY] 03_cv_curves_test_sr.png  →  research\figures\gru\03_cv_curves_test_sr.png
+  [COPY] 04_cv_curves_test_mat.png  →  research\figures\gru\04_cv_curves_test_mat.png
+  [COPY] 05_parity_plots.png  →  research\figures\gru\05_parity_plots.png
+  [COPY] 06_residual_distributions.png  →  research\figures\gru\06_residual_distributions.png
+  [COPY] 07_residual_vs_potential.png  →  research\figures\gru\07_residual_vs_potential.png
+  [COPY] 08_gru_feature_importance.png  →  research\figures\gru\08_feature_importance_permutation.png
+  [COPY] 09_per_group_rmse.png  →  research\figures\gru\09_per_group_rmse.png
+  [COPY] 10_nm4_scan_rate_trend.png  →  research\figures\gru\10_nm4_scan_rate_trend.png
+
+======================================================================
+STEP 11 — LightGBM artefacts
+======================================================================
+  [COPY] lightgbm_model.joblib  →  models\lightgbm\lightgbm_model.joblib
+  [COPY] lightgbm_booster.txt  →  models\lightgbm\lightgbm_booster.txt
+  [COPY] lightgbm_metrics.json  →  research\metrics\lightgbm_metrics.json
+  [COPY] per_group_rmse_test_mat.csv  →  research\per_group_csv\lightgbm\per_group_rmse_test_mat.csv
+  [COPY] per_group_rmse_test_sr.csv  →  research\per_group_csv\lightgbm\per_group_rmse_test_sr.csv
+  [COPY] per_group_rmse_val.csv  →  research\per_group_csv\lightgbm\per_group_rmse_val.csv
+  [COPY] 00_feature_correlation.png  →  research\figures\lightgbm\00_feature_correlation.png
+  [COPY] 01_lgbm_training_curve.png  →  research\figures\lightgbm\01_training_curve.png
+  [COPY] 02_cv_curves_val.png  →  research\figures\lightgbm\02_cv_curves_val.png
+  [COPY] 03_cv_curves_test_sr.png  →  research\figures\lightgbm\03_cv_curves_test_sr.png
+  [COPY] 04_cv_curves_test_mat.png  →  research\figures\lightgbm\04_cv_curves_test_mat.png
+  [COPY] 05_parity_plots.png  →  research\figures\lightgbm\05_parity_plots.png
+  [COPY] 06_residual_distributions.png  →  research\figures\lightgbm\06_residual_distributions.png
+  [COPY] 07_residual_vs_potential.png  →  research\figures\lightgbm\07_residual_vs_potential.png
+  [COPY] 08_lgbm_gain_importance.png  →  research\figures\lightgbm\08_feature_importance_gain.png
+  [COPY] 09_lgbm_permutation_importance.png  →  research\figures\lightgbm\09_feature_importance_permutation.png
+  [COPY] 10_per_group_rmse.png  →  research\figures\lightgbm\10_per_group_rmse.png
+  [COPY] 11_nm4_scan_rate_trend.png  →  research\figures\lightgbm\11_nm4_scan_rate_trend.png
+
+======================================================================
+STEP 12 — Final comparison outputs
+======================================================================
+  [COPY] fig01_rmse_comparison.png  →  research\figures\final_comparison\fig01_rmse_comparison.png
+  [COPY] fig02_r2_comparison.png  →  research\figures\final_comparison\fig02_r2_comparison.png
+  [COPY] fig03_mae_comparison.png  →  research\figures\final_comparison\fig03_mae_comparison.png
+  [COPY] fig04_maxerr_comparison.png  →  research\figures\final_comparison\fig04_maxerr_comparison.png
+  [COPY] fig05_training_time_vs_rmse.png  →  research\figures\final_comparison\fig05_training_time_vs_rmse.png
+  [COPY] fig06_model_size_vs_rmse.png  →  research\figures\final_comparison\fig06_model_size_vs_rmse.png
+  [COPY] fig07_radar_chart.png  →  research\figures\final_comparison\fig07_radar_chart.png
+  [COPY] fig08_performance_heatmap.png  →  research\figures\final_comparison\fig08_performance_heatmap.png
+  [COPY] fig09_nm4_extrapolation_by_scan_rate.png  →  research\figures\final_comparison\fig09_nm4_extrapolation_by_scan_rate.png
+  [COPY] fig10_generalisation_gap.png  →  research\figures\final_comparison\fig10_generalisation_gap.png
+  [COPY] fig11_error_spread_test_mat.png  →  research\figures\final_comparison\fig11_error_spread_test_mat.png
+  [COPY] fig12_accuracy_vs_complexity.png  →  research\figures\final_comparison\fig12_accuracy_vs_complexity.png
+  [COPY] comparison_metrics.csv  →  research\exports\comparison_metrics.csv
+  [COPY] final_leaderboard.csv  →  research\exports\final_leaderboard.csv
+  [COPY] nm4_per_scan_rate.csv  →  research\exports\nm4_per_scan_rate.csv
+  [COPY] final_summary.json  →  research\exports\final_summary.json
+  [COPY] SUMMARY.md  →  research\exports\SUMMARY.md
+
+======================================================================
+STEP 13 — Shared model assets  →  models/shared/
+======================================================================
+  [COPY] scalers.json  →  models\shared\scalers\scalers.json
+
+======================================================================
+STEP 14 — Generating model metadata.json files
+======================================================================
+  [NEW]  models/rf/metadata.json
+  [NEW]  models/xgboost/metadata.json
+  [NEW]  models/lightgbm/metadata.json
+  [NEW]  models/ann/metadata.json
+  [NEW]  models/lstm/metadata.json
+  [NEW]  models/gru/metadata.json
+
+======================================================================
+STEP 15 — Shared model registry and feature config
+======================================================================
+  [NEW]  models\shared\feature_config.json
+  [NEW]  models\shared\model_registry.json
+
+======================================================================
+STEP 16 — Backend scaffold (FastAPI)
+======================================================================
+  [NEW]  backend\app\__init__.py
+  [NEW]  backend\app\main.py
+  [NEW]  backend\app\api\__init__.py
+  [NEW]  backend\app\api\v1\__init__.py
+  [NEW]  backend\app\api\v1\router.py
+  [NEW]  backend\app\api\v1\endpoints\__init__.py
+  [NEW]  backend\app\api\v1\endpoints\health.py
+  [NEW]  backend\app\api\v1\endpoints\predict.py
+  [NEW]  backend\app\api\v1\endpoints\compare.py
+  [NEW]  backend\app\api\v1\endpoints\models.py
+  [NEW]  backend\app\api\v1\endpoints\metrics.py
+  [NEW]  backend\app\api\v1\endpoints\benchmarks.py
+  [NEW]  backend\app\core\__init__.py
+  [NEW]  backend\app\core\config.py
+  [NEW]  backend\app\core\model_registry.py
+  [NEW]  backend\app\core\exceptions.py
+  [NEW]  backend\app\schemas\__init__.py
+  [NEW]  backend\app\schemas\prediction.py
+  [NEW]  backend\app\schemas\comparison.py
+  [NEW]  backend\app\schemas\common.py
+  [NEW]  backend\app\services\__init__.py
+  [NEW]  backend\app\services\ml\__init__.py
+  [NEW]  backend\app\services\ml\base_predictor.py
+  [NEW]  backend\app\services\ml\rf_predictor.py
+  [NEW]  backend\app\services\ml\xgboost_predictor.py
+  [NEW]  backend\app\services\ml\lgbm_predictor.py
+  [NEW]  backend\app\services\ml\ann_predictor.py
+  [NEW]  backend\app\services\ml\lstm_predictor.py
+  [NEW]  backend\app\services\ml\gru_predictor.py
+  [NEW]  backend\app\services\ml\predictor_factory.py
+  [NEW]  backend\app\services\preprocessing\__init__.py
+  [NEW]  backend\app\services\preprocessing\feature_engineer.py
+  [NEW]  backend\app\services\preprocessing\normalizer.py
+  [NEW]  backend\app\services\preprocessing\sequence_builder.py
+  [NEW]  backend\app\services\postprocessing\__init__.py
+  [NEW]  backend\app\services\postprocessing\denormalizer.py
+  [NEW]  backend\app\services\analytics\__init__.py
+  [NEW]  backend\app\services\analytics\metrics_loader.py
+  [NEW]  backend\app\services\analytics\benchmark_ranker.py
+  [NEW]  backend\app\utils\__init__.py
+  [NEW]  backend\app\utils\model_loader.py
+  [NEW]  backend\app\utils\validators.py
+  [NEW]  backend\tests\__init__.py
+  [NEW]  backend\tests\conftest.py
+  [NEW]  backend\tests\test_predict.py
+  [NEW]  backend\requirements.txt
+  [NEW]  backend\requirements-dev.txt
+  [NEW]  backend\Procfile
+  [NEW]  backend\runtime.txt
+
+======================================================================
+STEP 17 — Frontend scaffold (React PWA)
+======================================================================
+  [NEW]  frontend\public\manifest.json
+  [NEW]  frontend\src\main.jsx
+  [NEW]  frontend\src\App.jsx
+  [NEW]  frontend\src\constants\routes.js
+  [NEW]  frontend\src\constants\models.js
+  [NEW]  frontend\src\constants\api.js
+  [NEW]  frontend\src\theme\theme.js
+  [NEW]  frontend\src\services\api.js
+  [NEW]  frontend\src\services\predictionService.js
+  [NEW]  frontend\src\services\metricsService.js
+  [NEW]  frontend\src\store\index.js
+  [NEW]  frontend\src\store\predictionSlice.js
+  [NEW]  frontend\src\store\uiSlice.js
+  [NEW]  frontend\src\hooks\usePrediction.js
+  [NEW]  frontend\src\pages\Dashboard.jsx
+  [NEW]  frontend\src\pages\PredictionStudio.jsx
+  [NEW]  frontend\src\pages\ModelComparison.jsx
+  [NEW]  frontend\src\pages\ResearchAnalytics.jsx
+  [NEW]  frontend\src\pages\ModelEncyclopedia.jsx
+  [NEW]  frontend\src\pages\BenchmarkResults.jsx
+  [NEW]  frontend\src\pages\CVGraphExplorer.jsx
+  [NEW]  frontend\src\pages\About.jsx
+  [NEW]  frontend\src\components\layout\AppShell.jsx
+  [NEW]  frontend\src\components\layout\Sidebar.jsx
+  [NEW]  frontend\src\components\layout\TopBar.jsx
+  [NEW]  frontend\src\components\charts\CVPlot.jsx
+  [NEW]  frontend\src\components\common\LoadingSpinner.jsx
+  [NEW]  frontend\src\components\common\ErrorAlert.jsx
+  [NEW]  frontend\src\components\common\StatusBadge.jsx
+  [NEW]  frontend\package.json
+  [NEW]  frontend\vite.config.js
+
+======================================================================
+STEP 18 — Deployment configs
+======================================================================
+  [NEW]  deployment\render\render.yaml
+  [NEW]  deployment\vercel\vercel.json
+  [NEW]  deployment\docker\Dockerfile.backend
+  [NEW]  deployment\docker\docker-compose.yml
+  [NEW]  deployment\nginx\nginx.conf
+
+======================================================================
+STEP 19 — Root config files (.env.example, .gitignore, pyproject.toml)
+======================================================================
+  [NEW]  .env.example
+  [NEW]  .gitignore
+  [NEW]  .gitattributes
+  [NEW]  pyproject.toml
+  [NEW]  CHANGELOG.md
+
+======================================================================
+STEP 20 — Master README.md
+======================================================================
+  [NEW]  README.md
+
+======================================================================
+STEP 21 — Documentation stubs
+======================================================================
+  [NEW]  docs\architecture\system_overview.md
+  [NEW]  docs\development\setup.md
+  [NEW]  docs\deployment\render_guide.md
+
+======================================================================
+STEP 22 — GitHub Actions CI/CD
+======================================================================
+  [NEW]  .github\workflows\backend-ci.yml
+  [NEW]  .github\workflows\frontend-ci.yml
+
+======================================================================
+STEP 23 — Report and presentation stubs
+======================================================================
+  [NEW]  reports\project_report\sections\abstract.md
+  [NEW]  reports\paper\sections\01_abstract.tex
+  [NEW]  reports\presentation\demo_script.md
+
+======================================================================
+REORGANIZATION COMPLETE
+======================================================================
+
+  New project root : D:\mca\2nd semester\ZnO_Supercapacitor_AI_Platform
+  Total files      : 256
+  Total folders    : 88
+  Total size       : 667.9 MB
+
+  Original source  : D:\mca\2nd semester\PBL Project  (UNCHANGED)
+
+╔══════════════════════════════════════════════════════════════════╗
+║           ZnO_Supercapacitor_AI_Platform  is ready              ║
+║                                                                  ║
+║  Next steps:                                                     ║
+║  1. cd ZnO_Supercapacitor_AI_Platform                           ║
+║  2. git init && git add . && git commit -m "initial structure"  ║
+║  3. cd backend && pip install -r requirements.txt               ║
+║  4. cp .env.example .env  (edit MODEL_DIR)                      ║
+║  5. uvicorn app.main:app --reload                               ║
+║  6. cd frontend && npm install && npm run dev                   ║
+╚══════════════════════════════════════════════════════════════════╝

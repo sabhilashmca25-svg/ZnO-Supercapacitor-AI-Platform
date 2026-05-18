@@ -1,0 +1,106 @@
+# ═══════════════════════════════════════════════════════════════
+#  ZnO Supercapacitor AI Platform — .gitignore
+# ═══════════════════════════════════════════════════════════════
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+*.so
+
+# ── Environment files (may contain secrets) ───────────────────────────────────
+.env
+.env.local
+.env.production
+.env.*.local
+# Backend .env has real ALLOWED_ORIGINS / secrets — never commit it
+backend/.env
+
+# ── Backend runtime logs (generated, not source) ──────────────────────────────
+backend/server_*.txt
+*.log
+logs/
+
+# ════════════════════════════════════════════════════════════════
+#  ML MODEL FILES
+#
+#  Commit strategy:
+#   SMALL models (< 2 MB each) → committed directly to git
+#     These are REQUIRED by the Render backend to run inference.
+#
+#   RF model (211 MB compressed) → gitignored
+#     Too large for GitHub (100 MB per-file limit).
+#     RF is excluded from ENABLED_MODELS on Render free tier.
+#     To use RF on a paid plan: upload manually to Render disk
+#     or use Git LFS on a paid GitHub plan.
+# ════════════════════════════════════════════════════════════════
+
+# RF baseline — 211 MB compressed (too large for GitHub)
+models/rf/*.joblib
+models/rf/*.backup
+
+# Auxiliary model text dumps — NOT loaded by the backend at runtime
+# (backend loads *.joblib and *.keras files only)
+models/lightgbm/*.txt
+models/xgboost/*.json
+
+# Small model files are NOT listed here → they ARE committed:
+#   models/lightgbm/lightgbm_model.joblib  (1.7 MB)
+#   models/xgboost/xgboost_model.joblib    (0.3 MB)
+#   models/ann/ann_model.keras             (0.2 MB)
+#   models/lstm/lstm_model.keras           (0.4 MB)
+#   models/gru/gru_model.keras             (0.3 MB)
+
+# ── Model metadata + shared config — always committed ─────────────────────────
+# (these are already not ignored — listed here for documentation)
+# models/shared/scalers/scalers.json
+# models/shared/feature_config.json
+# models/shared/model_registry.json
+# models/*/metadata.json
+
+# ── Data ──────────────────────────────────────────────────────────────────────
+# Raw source data — not needed at runtime
+data/raw/
+
+# Processed partition parquets — not needed at runtime
+data/processed/train_set.parquet
+data/processed/val_set.parquet
+data/processed/test_scanrate.parquet
+data/processed/test_material.parquet
+data/processed/scalers.json
+
+# master_long_format.parquet IS committed (1.8 MB).
+# Required by: GET /api/v1/experimental/{material}/{sr}
+#              POST /api/v1/validation/compare
+# (Not listed here = not ignored = committed)
+
+# ── Jupyter ───────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+
+# ── Node / Frontend ───────────────────────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.production
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# ── Stale / duplicate files ────────────────────────────────────────────────────
+# frontend/vite.config.ts is the authoritative config
+frontend/vite.config.js
