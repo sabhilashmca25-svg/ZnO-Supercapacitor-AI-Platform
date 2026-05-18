@@ -61,29 +61,15 @@ export default defineConfig({
         // Manual chunks: separate vendor libraries so they can be cached
         // independently and not re-downloaded when app code changes.
         manualChunks(id: string) {
-          // Normalise to forward slashes for cross-platform matching
           const nid = id.replace(/\\/g, "/");
-          // React core — changes rarely, benefits from long-term caching
-          if (nid.includes("/react/") ||
-              nid.includes("/react-dom/") ||
-              nid.includes("/react-router")) {
-            return "vendor-react";
-          }
-          // Plotly is very large (~3 MB) — isolate so other chunks stay small
+          // Plotly is very large (~3 MB) — isolate so it only loads when charts render
           if (nid.includes("/plotly") || nid.includes("/react-plotly")) {
             return "vendor-plotly";
           }
-          // MUI — large but stable
-          if (nid.includes("/@mui/")) {
-            return "vendor-mui";
-          }
-          // Framer Motion — animation library
-          if (nid.includes("/framer-motion")) {
-            return "vendor-framer";
-          }
-          // Everything else in node_modules → common vendor chunk
+          // All other node_modules in one chunk — avoids React chunk ordering race
+          // where libraries using useSyncExternalStore load before React itself
           if (nid.includes("/node_modules/")) {
-            return "vendor-misc";
+            return "vendor";
           }
         },
       },
