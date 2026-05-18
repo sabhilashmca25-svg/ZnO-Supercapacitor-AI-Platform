@@ -43,7 +43,7 @@ def health_check() -> dict:
     return {
         "status":        "ok",
         "version":       "1.0.0",
-        "models_loaded": model_registry.loaded_models(),
+        "models_loaded": settings.ENABLED_MODELS,
         "scalers_ok":    scalers_ok,
         "environment":   settings.APP_ENV,
     }

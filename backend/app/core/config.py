@@ -77,7 +77,7 @@ class Settings(BaseSettings):
     # ── Models to load at startup ────────────────────────────────────────────
     # Format: JSON array  →  ["rf","lightgbm","gru"]
     # All 6 options: "rf", "lightgbm", "gru", "xgboost", "ann", "lstm"
-    ENABLED_MODELS: List[str] = ["rf", "lightgbm", "gru"]
+    ENABLED_MODELS: List[str] = ["rf", "lightgbm", "gru", "xgboost", "ann", "lstm"]
 
     # ── Model display order for leaderboard / metrics responses ──────────────
     MODEL_ORDER: List[str] = ["rf", "lightgbm", "xgboost", "gru", "lstm", "ann"]
