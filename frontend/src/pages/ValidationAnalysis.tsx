@@ -33,6 +33,7 @@ import type {
   PerGroupResponse,
 } from "../types";
 import SectionHeader from "../components/common/SectionHeader";
+import { splitCVBranches, buildRevCustomdata } from "../components/charts/CVPlot";
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
@@ -235,23 +236,53 @@ function OverlayTab({ data, loading, onRun, model, setModel, material, setMateri
 
             {/* Overlay chart */}
             <Paper sx={{ background: DARK_PAPER, border: "1px solid rgba(255,255,255,0.07)", borderRadius: 3, p: { xs: 1, sm: 2 }, mb: 2.5 }}>
+              {/* Build dual-branch traces so hover shows both forward and reverse sweep */}
+              {(() => {
+                const eS  = splitCVBranches(data.experimental_potential_V, data.experimental_current_uA);
+                const pS  = splitCVBranches(data.predicted_potential_V,    data.predicted_current_uA);
+                const eCD = buildRevCustomdata(eS.revPot, eS.revCurr, eS.fwdPot, eS.fwdCurr);
+                const pCD = buildRevCustomdata(pS.revPot, pS.revCurr, pS.fwdPot, pS.fwdCurr);
+                const predLabel = `${MODEL_LABELS[data.model_name]} (Predicted)`;
+                return (
               <Plot
                 data={[
+                  // Experimental forward — hover line
                   {
-                    x: data.experimental_potential_V,
-                    y: data.experimental_current_uA,
+                    x: eS.fwdPot, y: eS.fwdCurr,
                     name: "Experimental (Measured)",
                     type: "scatter", mode: "lines",
                     line: { color: "#10b981", width: 2.5 },
-                    hovertemplate: "V: %{x:.4f}<br>I: %{y:.2f} µA<extra>Experimental</extra>",
+                    hovertemplate: "⬆ <b>%{y:+.1f}</b> µA<extra>Experimental — Forward</extra>",
+                    showlegend: false,
                   },
+                  // Experimental reverse + ΔI
                   {
-                    x: data.predicted_potential_V,
-                    y: data.predicted_current_uA,
-                    name: `${MODEL_LABELS[data.model_name]} (Predicted)`,
+                    x: eS.revPot, y: eS.revCurr,
+                    name: "Experimental (Measured)",
+                    type: "scatter", mode: "lines",
+                    line: { color: "#10b981", width: 2.5 },
+                    customdata: eCD,
+                    hovertemplate: "⬇ <b>%{y:+.1f}</b> µA  ·  ΔI = <b>%{customdata[0]:.1f}</b> µA<extra>Experimental — Reverse</extra>",
+                    showlegend: true,
+                  },
+                  // Predicted forward — hover line
+                  {
+                    x: pS.fwdPot, y: pS.fwdCurr,
+                    name: predLabel,
                     type: "scatter", mode: "lines",
                     line: { color: accent, width: 2, dash: "dash" },
-                    hovertemplate: "V: %{x:.4f}<br>I: %{y:.2f} µA<extra>Predicted</extra>",
+                    hovertemplate: `⬆ <b>%{y:+.1f}</b> µA<extra>${predLabel} — Forward</extra>`,
+                    showlegend: false,
+                  },
+                  // Predicted reverse + ΔI
+                  {
+                    x: pS.revPot, y: pS.revCurr,
+                    name: predLabel,
+                    type: "scatter", mode: "lines",
+                    line: { color: accent, width: 2, dash: "dash" },
+                    customdata: pCD,
+                    hovertemplate: `⬇ <b>%{y:+.1f}</b> µA  ·  ΔI = <b>%{customdata[0]:.1f}</b> µA<extra>${predLabel} — Reverse</extra>`,
+                    showlegend: true,
                   },
                 ]}
                 layout={{
@@ -265,6 +296,7 @@ function OverlayTab({ data, loading, onRun, model, setModel, material, setMateri
                 style={{ width: "100%", height: chartH }}
                 useResizeHandler
               />
+                ); })()}
             </Paper>
 
             {/* Metrics row */}
