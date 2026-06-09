@@ -33,7 +33,7 @@ import type {
   PerGroupResponse,
 } from "../types";
 import SectionHeader from "../components/common/SectionHeader";
-import { splitCVBranches, buildRevCustomdata } from "../components/charts/CVPlot";
+import { splitCVBranches, buildMasterHoverTrace } from "../components/charts/CVPlot";
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
@@ -236,60 +236,45 @@ function OverlayTab({ data, loading, onRun, model, setModel, material, setMateri
 
             {/* Overlay chart */}
             <Paper sx={{ background: DARK_PAPER, border: "1px solid rgba(255,255,255,0.07)", borderRadius: 3, p: { xs: 1, sm: 2 }, mb: 2.5 }}>
-              {/* Build dual-branch traces so hover shows both forward and reverse sweep */}
+              {/* Compact dual-branch hover via master trace — all visual traces skip hover */}
               {(() => {
-                const eS  = splitCVBranches(data.experimental_potential_V, data.experimental_current_uA);
-                const pS  = splitCVBranches(data.predicted_potential_V,    data.predicted_current_uA);
-                const eCD = buildRevCustomdata(eS.revPot, eS.revCurr, eS.fwdPot, eS.fwdCurr);
-                const pCD = buildRevCustomdata(pS.revPot, pS.revCurr, pS.fwdPot, pS.fwdCurr);
+                const eS = splitCVBranches(data.experimental_potential_V, data.experimental_current_uA);
+                const pS = splitCVBranches(data.predicted_potential_V,    data.predicted_current_uA);
+                // Master hover trace: invisible, carries all dual-branch data for both curves
+                const masterTrace = buildMasterHoverTrace(
+                  pS.fwdPot, pS.fwdCurr, pS.revPot, pS.revCurr,
+                  data.model_name,
+                  { potential_V: data.experimental_potential_V, actual_current_uA: data.experimental_current_uA }
+                );
                 const predLabel = `${MODEL_LABELS[data.model_name]} (Predicted)`;
                 return (
               <Plot
                 data={[
-                  // Experimental forward — hover line
-                  {
-                    x: eS.fwdPot, y: eS.fwdCurr,
-                    name: "Experimental (Measured)",
-                    type: "scatter", mode: "lines",
-                    line: { color: "#10b981", width: 2.5 },
-                    hovertemplate: "⬆ <b>%{y:+.1f}</b> µA<extra>Experimental — Forward</extra>",
-                    showlegend: false,
-                  },
-                  // Experimental reverse + ΔI
-                  {
-                    x: eS.revPot, y: eS.revCurr,
-                    name: "Experimental (Measured)",
-                    type: "scatter", mode: "lines",
-                    line: { color: "#10b981", width: 2.5 },
-                    customdata: eCD,
-                    hovertemplate: "⬇ <b>%{y:+.1f}</b> µA  ·  ΔI = <b>%{customdata[0]:.1f}</b> µA<extra>Experimental — Reverse</extra>",
-                    showlegend: true,
-                  },
-                  // Predicted forward — hover line
-                  {
-                    x: pS.fwdPot, y: pS.fwdCurr,
-                    name: predLabel,
-                    type: "scatter", mode: "lines",
-                    line: { color: accent, width: 2, dash: "dash" },
-                    hovertemplate: `⬆ <b>%{y:+.1f}</b> µA<extra>${predLabel} — Forward</extra>`,
-                    showlegend: false,
-                  },
-                  // Predicted reverse + ΔI
-                  {
-                    x: pS.revPot, y: pS.revCurr,
-                    name: predLabel,
-                    type: "scatter", mode: "lines",
-                    line: { color: accent, width: 2, dash: "dash" },
-                    customdata: pCD,
-                    hovertemplate: `⬇ <b>%{y:+.1f}</b> µA  ·  ΔI = <b>%{customdata[0]:.1f}</b> µA<extra>${predLabel} — Reverse</extra>`,
-                    showlegend: true,
-                  },
+                  // Experimental — visual only (forward + reverse), no hover
+                  { x: eS.fwdPot, y: eS.fwdCurr, name: "Experimental (Measured)",
+                    type: "scatter", mode: "lines", line: { color: "#10b981", width: 2.5 },
+                    hoverinfo: "skip", showlegend: false },
+                  { x: eS.revPot, y: eS.revCurr, name: "Experimental (Measured)",
+                    type: "scatter", mode: "lines", line: { color: "#10b981", width: 2.5 },
+                    hoverinfo: "skip", showlegend: true },
+                  // Predicted — visual only (forward + reverse), no hover
+                  { x: pS.fwdPot, y: pS.fwdCurr, name: predLabel,
+                    type: "scatter", mode: "lines", line: { color: accent, width: 2, dash: "dash" },
+                    hoverinfo: "skip", showlegend: false },
+                  { x: pS.revPot, y: pS.revCurr, name: predLabel,
+                    type: "scatter", mode: "lines", line: { color: accent, width: 2, dash: "dash" },
+                    hoverinfo: "skip", showlegend: true },
+                  // Master hover trace — owns the tooltip
+                  masterTrace,
                 ]}
                 layout={{
                   ...PLOTLY_LAYOUT_BASE,
                   height: chartH,
+                  hovermode: "closest",
                   title: { text: "Cyclic Voltammetry: Experimental vs Predicted", font: { size: 13, color: "#f1f5f9" } },
-                  xaxis: { ...PLOTLY_LAYOUT_BASE.xaxis, title: { text: "Potential (V)", standoff: 12 } },
+                  xaxis: { ...PLOTLY_LAYOUT_BASE.xaxis, title: { text: "Potential (V)", standoff: 12 },
+                    showspikes: true, spikemode: "across", spikethickness: 1,
+                    spikecolor: "rgba(0,212,255,0.35)", spikedash: "dot" },
                   yaxis: { ...PLOTLY_LAYOUT_BASE.yaxis, title: { text: "Current (µA)", standoff: 8 } },
                 }}
                 config={{ displayModeBar: true, modeBarButtonsToRemove: ["lasso2d","select2d"], displaylogo: false }}
