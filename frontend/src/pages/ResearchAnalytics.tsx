@@ -20,7 +20,7 @@ import SectionHeader from "../components/common/SectionHeader";
 import ModelBadge from "../components/common/ModelBadge";
 import GlowButton from "../components/common/GlowButton";
 import { RMSEBarChart, R2GroupedChart, SizeVsRMSEScatter } from "../components/charts/MetricsChart";
-import { fmtUa, fmtMB, rmseColor, r2Color, shortPartition } from "../utils/formatters";
+import { fmtMB, rmseColor, r2Color, shortPartition } from "../utils/formatters";
 import { MODEL_COLORS, MODEL_ORDER, MATERIALS, MODELS } from "../constants/models";
 import { cardVariants, staggerContainer } from "../animations/variants";
 import type { TrainingHistory } from "../types";
@@ -69,7 +69,7 @@ const ELECTROCHEMICAL_INSIGHTS = [
   { icon: "⚡", color: "#f59e0b", title: "Sweep Direction Encoding",
     body: "The most predictively important engineered feature is direction_x_potential_norm (sweep_direction × potential_V). This interaction term is the dominant predictor in all tree models (~27% of RF MDI, ~60% of XGBoost gain), encoding position in the sweep differently for each half-sweep and capturing ZnO electrode asymmetry." },
   { icon: "🧪", color: "#a78bfa", title: "Material Extrapolation (NM4)",
-    body: "NM4 (ZnO/Co₃O₄) was excluded from training as a held-out test material. GRU's superior testMAT R² (0.9751) suggests recurrent models capture fundamental CV topology (shape, symmetry, scale relationships) rather than material-specific memorisation — enabling genuine cross-material generalisation." },
+    body: "NM4 was excluded from training as a held-out test material. GRU's superior testMAT R² (0.9751) suggests recurrent models capture fundamental CV topology (shape, symmetry, scale relationships) rather than material-specific memorisation — enabling genuine cross-material generalisation." },
 ];
 
 const FEATURE_LABELS: Record<string, string> = {
@@ -88,10 +88,16 @@ const FEATURE_LABELS: Record<string, string> = {
 // Actual partition keys returned by API
 const PARTITION_KEYS = ["train", "val", "test_SR", "test_MAT"];
 const PARTITION_LABELS: Record<string, string> = {
-  "train": "Train (in-sample)", "val": "Val (SR=30)", "test_SR": "Test-SR (SR=50)", "test_MAT": "Test-MAT (NM4)",
+  train: "Train (in-sample)",
+  val: "Val (SR=30)",
+  test_SR: "Test-SR (SR=50)",
+  test_MAT: "Test-MAT (NM4)",
 };
 const PARTITION_COLORS: Record<string, string> = {
-  "train": "#6366f1", "val": "#10b981", "test_SR": "#f59e0b", "test_MAT": "#f472b6",
+  train: "#6366f1",
+  val: "#10b981",
+  test_SR: "#f59e0b",
+  test_MAT: "#f472b6",
 };
 
 // ── Tab navigation: 4 categories with sub-tabs ───────────────────────────
@@ -130,16 +136,16 @@ const CATEGORIES = [
 
 // Keep for backwards compat (not used in navigation anymore)
 const TABS = [
-  { label: "Leaderboard",       icon: <EmojiEventsRounded sx={{ fontSize: 16 }} /> },
-  { label: "Performance",       icon: <InsightsRounded sx={{ fontSize: 16 }} /> },
-  { label: "Feature Intel",     icon: <BiotechRounded sx={{ fontSize: 16 }} /> },
-  { label: "Deployment",        icon: <SpeedRounded sx={{ fontSize: 16 }} /> },
+  { label: "Leaderboard", icon: <EmojiEventsRounded sx={{ fontSize: 16 }} /> },
+  { label: "Performance", icon: <InsightsRounded sx={{ fontSize: 16 }} /> },
+  { label: "Feature Intel", icon: <BiotechRounded sx={{ fontSize: 16 }} /> },
+  { label: "Deployment", icon: <SpeedRounded sx={{ fontSize: 16 }} /> },
   { label: "Scientific Insights", icon: <LightbulbRounded sx={{ fontSize: 16 }} /> },
-  { label: "Training History",  icon: <TimelineRounded sx={{ fontSize: 16 }} /> },
-  { label: "Hyperparameters",   icon: <TuneRounded sx={{ fontSize: 16 }} /> },
+  { label: "Training History", icon: <TimelineRounded sx={{ fontSize: 16 }} /> },
+  { label: "Hyperparameters", icon: <TuneRounded sx={{ fontSize: 16 }} /> },
   { label: "Scan Rate Evolution", icon: <ShowChartRounded sx={{ fontSize: 16 }} /> },
-  { label: "Full Metrics",      icon: <BarChartRounded sx={{ fontSize: 16 }} /> },
-  { label: "Pred. Validation",  icon: <AutoGraphRounded sx={{ fontSize: 16 }} /> },
+  { label: "Full Metrics", icon: <BarChartRounded sx={{ fontSize: 16 }} /> },
+  { label: "Pred. Validation", icon: <AutoGraphRounded sx={{ fontSize: 16 }} /> },
   { label: "Material Analysis", icon: <ScatterPlotRounded sx={{ fontSize: 16 }} /> },
 ];
 
@@ -619,8 +625,8 @@ export default function ResearchAnalytics() {
                                 <TableCell align="right" sx={{ color: rmseColor(r.rmse_val_uA), fontFamily: "JetBrains Mono", fontSize: "0.8rem", fontWeight: 600 }}>{r.rmse_val_uA?.toFixed(2)}</TableCell>
                                 <TableCell align="right" sx={{ color: rmseColor(r.rmse_test_sr_uA), fontFamily: "JetBrains Mono", fontSize: "0.8rem", fontWeight: 600 }}>{r.rmse_test_sr_uA?.toFixed(2)}</TableCell>
                                 <TableCell align="right" sx={{ color: rmseColor(r.rmse_test_mat_uA), fontFamily: "JetBrains Mono", fontSize: "0.8rem", fontWeight: 600 }}>{r.rmse_test_mat_uA?.toFixed(2)}</TableCell>
-                                <TableCell align="right" sx={{ color: gap > 12 ? "#ef4444" : "#f59e0b", fontFamily: "JetBrains Mono", fontSize: "0.8rem", fontWeight: 700 }}>
-                                  +{gap.toFixed(2)} µA
+                                <TableCell align="right" sx={{ color: gap < 0 ? "#10b981" : gap > 12 ? "#ef4444" : "#f59e0b", fontFamily: "JetBrains Mono", fontSize: "0.8rem", fontWeight: 700 }}>
+                                  {gap >= 0 ? "+" : ""}{gap.toFixed(2)} µA
                                 </TableCell>
                                 <TableCell align="right" sx={{ color: r2Color(r.r2_test_mat), fontFamily: "JetBrains Mono", fontSize: "0.8rem", fontWeight: 700 }}>{r.r2_test_mat?.toFixed(4)}</TableCell>
                                 <TableCell align="center">
@@ -1609,7 +1615,7 @@ export default function ResearchAnalytics() {
                         { label: "SR Interpolation (Test SR=50)", color: "#f59e0b", icon: "📈",
                           text: "SR=50 mV/s tests scan rate interpolation — it falls between trained rates SR=40 and SR=60, making this an interpolation test, not extrapolation. Good performance validates that the engineered log(SR) and √(SR) features correctly capture Randles–Ševčík scan-rate scaling." },
                         { label: "Material Extrapolation (NM4)", color: "#f472b6", icon: "🧪",
-                          text: "NM4 (ZnO/Co₃O₄) is completely unseen material. This is the gold standard test: can the model generalize its learned CV topology to a new electrode material? GRU excels here (R²=0.9751)." },
+                          text: "NM4 is a completely unseen experimental material. This is the gold standard test: can the model generalize its learned CV topology to a new electrode material? GRU excels here (R²=0.9751)." },
                       ].map((e) => (
                         <Grid item xs={12} sm={6} key={e.label}>
                           <Box sx={{ p: 1.75, borderRadius: 2, background: alpha(e.color, 0.05), border: `1px solid ${alpha(e.color, 0.15)}` }}>
@@ -1757,10 +1763,10 @@ export default function ResearchAnalytics() {
                     />
                     <Box sx={{ mt: 2 }}>
                       {[
-                        { label: "NM1", desc: "ZnO nanorods", color: "#3b82f6", curves: "10 SR × train+val+testSR" },
-                        { label: "NM2", desc: "ZnO nanosheets", color: "#22d3ee", curves: "10 SR × train+val+testSR" },
-                        { label: "NM3", desc: "ZnO/rGO composite", color: "#10b981", curves: "10 SR × train+val+testSR" },
-                        { label: "NM4", desc: "ZnO/Co₃O₄ — UNSEEN", color: "#f472b6", curves: "10 SR × test-MAT only" },
+                        { label: "NM1", desc: "ZnO baseline", color: "#3b82f6", curves: "10 SR × train+val+testSR" },
+                        { label: "NM2", desc: "Experimental sample", color: "#22d3ee", curves: "10 SR × train+val+testSR" },
+                        { label: "NM3", desc: "Experimental sample", color: "#10b981", curves: "10 SR × train+val+testSR" },
+                        { label: "NM4", desc: "Experimental sample — UNSEEN", color: "#f472b6", curves: "10 SR × test-MAT only" },
                       ].map((m) => (
                         <Box key={m.label} sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
                           <Box sx={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: m.color, flexShrink: 0 }} />
@@ -1837,7 +1843,7 @@ export default function ResearchAnalytics() {
                       ZERO-SHOT NM4 RANKING
                     </Typography>
                     <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.3)", fontSize: "0.65rem", display: "block", mb: 1.5 }}>
-                      R² on NM4 (ZnO/Co₃O₄) — ranked by material extrapolation performance.
+                      R² on NM4 (unseen experimental sample) — ranked by material extrapolation performance.
                     </Typography>
                     {loading ? Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} height={36} sx={{ mb: 0.5 }} />) : (
                       [...leaderboard]
@@ -1876,7 +1882,7 @@ export default function ResearchAnalytics() {
                     )}
                     <Typography variant="caption"
                       sx={{ color: "rgba(255,255,255,0.18)", mt: 1, display: "block", fontSize: "0.6rem" }}>
-                      Bar scale: 0.90→0.98 R² range. NM4 = ZnO/Co₃O₄ nanocomposite, unseen during training.
+                      Bar scale: 0.90→0.98 R² range. NM4 = experimental sample, unseen during training.
                     </Typography>
                   </CardContent>
                 </Card>
@@ -1894,7 +1900,7 @@ export default function ResearchAnalytics() {
                         { icon: "🔒", color: "#6366f1", title: "Curve-level, not point-level split",
                           text: "Each CV curve contains 651 correlated points. Splitting at the point level would allow the model to see the beginning/end of a curve during training and predict the middle — trivially inflating R². Our split ensures entire curves are allocated to exactly one partition." },
                         { icon: "🧪", color: "#f472b6", title: "NM4 as zero-shot material test",
-                          text: "ZnO/Co₃O₄ (NM4) is a chemically distinct material from the ZnO-based NM1–NM3. Its exclusion from training tests whether learned electrochemical priors (CV shape, scan rate scaling, redox peak behavior) transfer to a new electrode composition without any fine-tuning." },
+                          text: "NM4 is a distinct experimental material from NM1–NM3. Its exclusion from training tests whether learned electrochemical priors (CV shape, scan rate scaling, redox peak behavior) transfer to a new electrode composition without any fine-tuning." },
                         { icon: "📡", color: "#f59e0b", title: "SR=30 as interpolation test",
                           text: "SR=30 mV/s was unseen during training (which used 10, 20, 40, 60, 70, 80, 90, 100 mV/s). This tests whether models correctly interpolate the Randles–Ševčík current–scan-rate relationship between SR=20 and SR=40. All models pass this test well (R² > 0.97)." },
                         { icon: "📈", color: "#10b981", title: "SR=50 as second interpolation test",

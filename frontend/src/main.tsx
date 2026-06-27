@@ -6,9 +6,6 @@ import App from "./App";
 import { store } from "./store";
 import "./index.css";
 
-// ── Version stamp — if this appears in console, NEW code is loading ────────
-console.log("%c✅ ZnO Platform v2 — NEW CODE LOADED", "color: lime; font-size: 16px; font-weight: bold");
-
 // ── Dev-only: evict stale service workers so code changes always take effect ──
 // In PRODUCTION this block is skipped — the SW provides offline caching.
 if (import.meta.env.DEV && "serviceWorker" in navigator) {

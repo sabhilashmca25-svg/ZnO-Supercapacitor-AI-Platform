@@ -39,17 +39,17 @@ const MODEL_METADATA: Record<string, {
   family: string; params: string; trainMin: number;
   inference: string; flops: string;
 }> = {
-  rf:       { family: "Ensemble / Tree",     params: "300 trees",    trainMin: 4,  inference: "~120 ms", flops: "~650K" },
-  lightgbm: { family: "Gradient Boosting",   params: "278 trees",    trainMin: 2,  inference: "~5 ms",   flops: "~56K"  },
-  xgboost:  { family: "Gradient Boosting",   params: "110 trees",    trainMin: 6,  inference: "<1 ms",   flops: "~40K"  },
-  gru:      { family: "Recurrent (Deep)",     params: "24 545",       trainMin: 20, inference: "~125 ms", flops: "~32M"  },
-  lstm:     { family: "Recurrent (Deep)",     params: "32 161",       trainMin: 25, inference: "~140 ms", flops: "~42M"  },
-  ann:      { family: "Dense MLP (Deep)",     params: "11 777",       trainMin: 10, inference: "~120 ms", flops: "~12M"  },
+  rf: { family: "Ensemble / Tree", params: "300 trees", trainMin: 4, inference: "~120 ms", flops: "~650K" },
+  lightgbm: { family: "Gradient Boosting", params: "278 trees", trainMin: 2, inference: "~5 ms", flops: "~56K" },
+  xgboost: { family: "Gradient Boosting", params: "110 trees", trainMin: 6, inference: "<1 ms", flops: "~40K" },
+  gru: { family: "Recurrent (Deep)", params: "24 545", trainMin: 20, inference: "~125 ms", flops: "~32M" },
+  lstm: { family: "Recurrent (Deep)", params: "32 161", trainMin: 25, inference: "~140 ms", flops: "~42M" },
+  ann: { family: "Dense MLP (Deep)", params: "11 777", trainMin: 10, inference: "~120 ms", flops: "~12M" },
 };
 
 const DarkLayout = (overrides: Partial<Plotly.Layout> = {}): Partial<Plotly.Layout> => ({
   paper_bgcolor: "rgba(0,0,0,0)",
-  plot_bgcolor:  "rgba(13,19,33,0.5)",
+  plot_bgcolor: "rgba(13,19,33,0.5)",
   font: { family: "Inter, sans-serif", color: "#8892a4", size: 11 },
   margin: { l: 60, r: 30, t: 20, b: 55 },
   autosize: true,
@@ -84,7 +84,7 @@ export default function BenchmarkResults() {
 
   // Classical vs Deep split
   const classicalModels = leaderboard.filter((r) => ["rf", "lightgbm", "xgboost"].includes(r.model_id));
-  const deepModels      = leaderboard.filter((r) => ["gru", "lstm", "ann"].includes(r.model_id));
+  const deepModels = leaderboard.filter((r) => ["gru", "lstm", "ann"].includes(r.model_id));
 
   return (
     <Box sx={{ width: "100%", overflowX: "hidden" }}>
@@ -174,7 +174,7 @@ export default function BenchmarkResults() {
                         </TableCell>
                         <TableCell align="right">
                           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 1 }}>
-                            <LinearProgress variant="determinate" value={Math.max(0, (row.r2_test_mat - 0.92) / 0.06 * 100)}
+                            <LinearProgress variant="determinate" value={Math.min(100, Math.max(0, (row.r2_test_mat - 0.92) / 0.06 * 100))}
                               sx={{ width: 36, height: 4, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.05)", "& .MuiLinearProgress-bar": { backgroundColor: r2Color(row.r2_test_mat) } }} />
                             <Typography variant="body2" sx={{ fontFamily: "JetBrains Mono", fontSize: "0.78rem", color: r2Color(row.r2_test_mat), fontWeight: 700 }}>{row.r2_test_mat.toFixed(4)}</Typography>
                           </Box>

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import {
   Box,
   Grid,
@@ -37,6 +37,7 @@ import {
   TrendingFlatRounded,
   ArrowUpwardRounded,
   ArrowDownwardRounded,
+  AssignmentRounded,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePrediction } from "../hooks/usePrediction";
@@ -51,7 +52,15 @@ import { MODELS, MATERIALS, MODEL_COLORS } from "../constants/models";
 import { fmtUa } from "../utils/formatters";
 import { cardVariants, staggerContainer } from "../animations/variants";
 import GlossaryTooltip from "../components/common/GlossaryTooltip";
+import ExperimentReport from "../components/report/ExperimentReport";
 import type { PredictionResponse } from "../types";
+import { useRecentExperiments } from "../hooks/useRecentExperiments";
+import { useLastSession } from "../hooks/useLastSession";
+import { useAppDispatch } from "../hooks/useAppDispatch";
+import { setLatestKey } from "../store/predictionSlice";
+import RecentExperimentsPanel from "../components/pwa/RecentExperimentsPanel";
+import ResumeSessionDialog from "../components/pwa/ResumeSessionDialog";
+import type { ExperimentRecord } from "../hooks/useRecentExperiments";
 
 const SCAN_RATE_MARKS = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map((v) => ({
   value: v,
@@ -90,7 +99,7 @@ function getConfidenceTier(
     return {
       label: "Cross-Material Transfer",
       color: "#f472b6",
-      desc: "NM4 (ZnO/Co₃O₄) was fully excluded from training — model generalises CV topology learned from NM1–3; test-MAT R² = 0.9751 (GRU) validates cross-material transfer capability",
+      desc: "NM4 was fully excluded from training — model generalises CV topology learned from NM1–3; test-MAT R² = 0.9751 (GRU) validates cross-material transfer capability",
     };
   }
   if (isEdgeSR) {
@@ -212,17 +221,17 @@ function generateInterpretation(
       (chargeStorageIndex > 200
         ? "High charge storage — composite electrode likely exhibiting pseudocapacitive enhancement."
         : chargeStorageIndex > 80
-        ? "Moderate charge storage — typical for pure ZnO nanostructures in KOH electrolyte."
+        ? "Moderate charge storage — typical for pure ZnO nanostructures in Na₂SO₄ electrolyte."
         : "Low charge storage — may indicate high scan rate compression or material with limited active surface.")
     );
   }
 
   // 4. Material-specific electrochemistry
   const materialInsights: Record<string, string> = {
-    NM1: `NM1 (ZnO nanorod baseline) — the predicted CV establishes the pure-ZnO reference. Charge storage arises from Zn²⁺/Zn⁰ redox transitions and OH⁻ adsorption at the nanorod surface. Any improvement in composites (NM2–4) is benchmarked against this prediction.`,
-    NM2: `NM2 (ZnO/rGO) — reduced graphene oxide introduces high-surface-area carbon pathways, amplifying the double-layer contribution. Compare the integral area to NM1: the surplus charge is attributable to rGO's π-electron cloud interactions with the electrolyte.`,
-    NM3: `NM3 (ZnO/MnO₂) — MnO₂ introduces pseudocapacitive Mn³⁺↔Mn⁴⁺ redox transitions. The model may underestimate the asymmetric hump in the 0.2–0.5 V region; slight CV distortion vs. NM1 is electrochemically expected.`,
-    NM4: `NM4 (ZnO/Co₃O₄) — zero-shot extrapolation. Co₃O₄ introduces Co²⁺↔Co³⁺ surface redox, which is morphologically distinct from NM1–3 training data. The prediction captures bulk ZnO behaviour; Co-specific redox humps may be underrepresented.`,
+    NM1: `NM1 (ZnO baseline) — the predicted CV establishes the pure-ZnO reference. Charge storage arises from ZnO surface interactions with Na₂SO₄ electrolyte ions. Any difference in composites (NM2–4) is benchmarked against this prediction.`,
+    NM2: `NM2 (experimental sample) — shows a CV profile distinct from NM1. The change in integral area vs. NM1 reflects differences in charge storage behaviour, surface area, or electrode composition. Specific composition is not defined in the source dataset.`,
+    NM3: `NM3 (experimental sample) — shows CV behaviour different from NM1 and NM2. Any peaks or asymmetry relative to NM1 may indicate different charge storage mechanisms. Specific composition is not defined in the source dataset.`,
+    NM4: `NM4 (zero-shot experimental sample) — completely unseen during training. The model predicts CV behaviour based purely on patterns learned from NM1–3. This is the hardest generalisation test: any morphological differences vs. NM1–3 probe the model's transfer capability. Specific composition is not defined in the source dataset.`,
   };
   if (materialInsights[mat]) lines.push(materialInsights[mat]);
 
@@ -334,6 +343,21 @@ export default function PredictionStudio() {
   const [experimentalData, setExperimentalData] = useState<ExperimentalCurveResponse | null>(null);
   const [experimentalLoading, setExperimentalLoading] = useState(false);
   const { predict, clear, results, latestResult, loading, error } = usePrediction();
+  const dispatch = useAppDispatch();
+
+  // ── Experiment Report state ────────────────────────────────────────────
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportGeneratedAt, setReportGeneratedAt] = useState(() => new Date());
+  const [predTimeMs, setPredTimeMs] = useState<number | null>(null);
+  const predStartRef = useRef<number | null>(null);
+  const prevLoadingRef = useRef(false);
+
+  // ── Persistent PWA hooks ───────────────────────────────────────────────
+  const { records: recentExps, save: saveExperiment, attachReportId, clear: clearExperiments } = useRecentExperiments();
+  const { lastSession, save: saveSession } = useLastSession();
+  const currentExpIdRef = useRef<string | null>(null);
+  const [resumeOpen, setResumeOpen] = useState(() => !!lastSession);
+  const [restoreMessage, setRestoreMessage] = useState<string | null>(null);
 
   const snappedSR = useMemo(() => nearestSR(scanRate), [scanRate]);
   const isSnapped = snappedSR !== Math.round(scanRate * 10) / 10;
@@ -346,6 +370,9 @@ export default function PredictionStudio() {
     () => Object.values(results).slice(-5).reverse(),
     [results]
   );
+
+  // Keys currently in Redux cache — used by RecentExperimentsPanel to show restore status
+  const cachedKeys = useMemo(() => new Set(Object.keys(results)), [results]);
 
   // Advanced metrics for current result
   const advMetrics = useMemo(
@@ -361,6 +388,43 @@ export default function PredictionStudio() {
         : null,
     [latestResult]
   );
+
+  // Track prediction wall-clock time (loading false→true = start, true→false = end)
+  // Also persist session + experiment record on each successful prediction
+  useEffect(() => {
+    if (loading && !prevLoadingRef.current) {
+      predStartRef.current = Date.now();
+    } else if (!loading && prevLoadingRef.current && latestResult) {
+      setPredTimeMs(Math.round(Date.now() - (predStartRef.current ?? Date.now())));
+      setReportGeneratedAt(new Date());
+
+      // Persist experiment record for Feature 4 (Recent Experiments)
+      const tier = getConfidenceTier(latestResult.model_name, latestResult.material_id, latestResult.scan_rate_mVs);
+      const expId = saveExperiment({
+        model: latestResult.model_name,
+        material: latestResult.material_id,
+        scanRate: latestResult.scan_rate_mVs,
+        confidence: { label: tier.label, color: tier.color },
+        peakAnodic: latestResult.statistics.peak_anodic_uA,
+        peakCathodic: latestResult.statistics.peak_cathodic_uA,
+        maxCurrent: latestResult.statistics.peak_anodic_uA,
+        minCurrent: latestResult.statistics.peak_cathodic_uA,
+        rmse: MODEL_RMSE_UA[latestResult.model_name] ?? 0,
+        isZeroShot: latestResult.material_id === "NM4",
+      });
+      currentExpIdRef.current = expId;
+
+      // Persist last session for Feature 5 (Resume Last Session)
+      saveSession({
+        model: latestResult.model_name,
+        material: latestResult.material_id,
+        scanRate: latestResult.scan_rate_mVs,
+        lastExperimentId: expId,
+        timestamp: new Date().toISOString(),
+      });
+    }
+    prevLoadingRef.current = loading;
+  }, [loading, latestResult, saveSession, saveExperiment]);
 
   // Scientific interpretation paragraphs
   const interpretation = useMemo(
@@ -418,6 +482,35 @@ export default function PredictionStudio() {
     }
   }, [scanRateText]);
 
+  const handleResume = useCallback(() => {
+    if (!lastSession) return;
+    setModelId(lastSession.model);
+    setMaterialId(lastSession.material);
+    setScanRate(lastSession.scanRate);
+    setScanRateText(String(lastSession.scanRate));
+    const cacheKey = `${lastSession.model}_${lastSession.material}_${lastSession.scanRate}`;
+    if (cacheKey in results) {
+      dispatch(setLatestKey(cacheKey));
+    }
+    setResumeOpen(false);
+  }, [lastSession, results, dispatch]);
+
+  const handleRestoreExperiment = useCallback((exp: ExperimentRecord) => {
+    setModelId(exp.model);
+    setMaterialId(exp.material);
+    setScanRate(exp.scanRate);
+    setScanRateText(String(exp.scanRate));
+    const cacheKey = `${exp.model}_${exp.material}_${exp.scanRate}`;
+    if (cacheKey in results) {
+      dispatch(setLatestKey(cacheKey));
+      if (exp.reportId) {
+        setReportOpen(true);
+      }
+    } else {
+      setRestoreMessage("This experiment's prediction data is no longer available in this session. Selections have been restored — run the prediction again to see results.");
+    }
+  }, [results, dispatch]);
+
   const handlePredict = useCallback(() => {
     // Save current result as "previous" before issuing the new prediction
     setPreviousResult(latestResult ?? null);
@@ -449,7 +542,7 @@ export default function PredictionStudio() {
     }
     // Fetch experimental data — capture current params to guard against concurrent calls
     const fetchMat = latestResult.material_id;
-    const fetchSR  = latestResult.scan_rate_mVs;
+    const fetchSR = latestResult.scan_rate_mVs;
     setExperimentalLoading(true);
     try {
       const data = await getExperimentalCurve(fetchMat, fetchSR);
@@ -481,6 +574,46 @@ export default function PredictionStudio() {
         subtitle="Select a material, scan rate, and ML model — run real-time CV curve prediction with full electrochemical analysis and scientific interpretation"
         accent="#00d4ff"
       />
+
+      {/* ── Feature 5: Resume Last Session dialog ───────────────────────── */}
+      {resumeOpen && lastSession && (
+        <ResumeSessionDialog
+          session={lastSession}
+          open={resumeOpen}
+          isCached={`${lastSession.model}_${lastSession.material}_${lastSession.scanRate}` in results}
+          hasReport={recentExps.find((e) => e.id === lastSession.lastExperimentId)?.reportId !== undefined}
+          onResume={handleResume}
+          onStartNew={() => setResumeOpen(false)}
+        />
+      )}
+
+      {/* ── Restore-unavailable snackbar ─────────────────────────────────── */}
+      <AnimatePresence>
+        {restoreMessage && (
+          <motion.div
+            key="restore-msg"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.22 }}
+            style={{ marginBottom: 16 }}
+          >
+            <Alert
+              severity="info"
+              onClose={() => setRestoreMessage(null)}
+              sx={{
+                background: "rgba(0,212,255,0.06)",
+                border: "1px solid rgba(0,212,255,0.2)",
+                color: "rgba(255,255,255,0.7)",
+                fontSize: "0.78rem",
+                "& .MuiAlert-icon": { color: "#00d4ff" },
+              }}
+            >
+              {restoreMessage}
+            </Alert>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Grid container spacing={{ xs: 2, md: 3 }}>
         {/* ── Left panel: controls ───────────────────────────────────── */}
@@ -664,6 +797,13 @@ export default function PredictionStudio() {
                 </Card>
               </motion.div>
             )}
+            {/* ── Persistent recent experiments (Feature 4) ────────── */}
+            <RecentExperimentsPanel
+              records={recentExps}
+              cachedKeys={cachedKeys}
+              onRestore={handleRestoreExperiment}
+              onClear={clearExperiments}
+            />
           </motion.div>
         </Grid>
 
@@ -1003,6 +1143,21 @@ export default function PredictionStudio() {
                       >
                         Summary TXT
                       </GlowButton>
+                      <GlowButton
+                        variant="outlined" size="small"
+                        startIcon={<AssignmentRounded sx={{ fontSize: 14 }} />}
+                        onClick={() => {
+                          setReportOpen(true);
+                          if (currentExpIdRef.current) {
+                            const rptId = `rpt_${Date.now().toString(36)}`;
+                            attachReportId(currentExpIdRef.current, rptId);
+                          }
+                        }}
+                        glowColor="#f59e0b"
+                        sx={{ fontSize: "0.72rem", py: 0.5, px: 1.5, borderColor: "rgba(245,158,11,0.35)", color: "#f59e0b", "&:hover": { borderColor: "#f59e0b", background: "rgba(245,158,11,0.06)" } }}
+                      >
+                        Experiment Report
+                      </GlowButton>
                       <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.2)", fontSize: "0.62rem" }}>
                         · PNG: use camera icon in chart toolbar
                       </Typography>
@@ -1046,6 +1201,21 @@ export default function PredictionStudio() {
           </AnimatePresence>
         </Grid>
       </Grid>
+
+      {/* ── Experiment Report dialog ──────────────────────────────── */}
+      {latestResult && advMetrics && confidenceTier && modelConfig && (
+        <ExperimentReport
+          open={reportOpen}
+          onClose={() => setReportOpen(false)}
+          result={latestResult}
+          advMetrics={advMetrics}
+          confidenceTier={confidenceTier}
+          interpretation={interpretation}
+          modelConfig={modelConfig}
+          predictionMs={predTimeMs}
+          generatedAt={reportGeneratedAt}
+        />
+      )}
     </Box>
   );
 }

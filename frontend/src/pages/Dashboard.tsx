@@ -19,9 +19,10 @@ import { usePrediction } from "../hooks/usePrediction";
 import { predict as apiPredict } from "../api/endpoints";
 import GlowButton from "../components/common/GlowButton";
 import ModelBadge from "../components/common/ModelBadge";
+import AnimatedCounter from "../components/common/AnimatedCounter";
 import { MODEL_COLORS } from "../constants/models";
 import { fmtMB, rmseColor, r2Color } from "../utils/formatters";
-import { cardVariants } from "../animations/variants";
+import { cardVariants, lineDrawVariants } from "../animations/variants";
 import { ROUTES } from "../constants/routes";
 
 const MotionTableRow = motion(TableRow);
@@ -30,7 +31,7 @@ const QUICK_INSIGHTS = [
   { title: "Best Generalisation", model: "GRU",          color: "#a78bfa", icon: "🧠", metric: "R² = 0.9751 on NM4",          text: "Gated recurrent units model sweep directionality sequentially — highest cross-material transfer R² on unseen NM4." },
   { title: "Best Deployment",    model: "LightGBM",     color: "#22d3ee", icon: "⚡", metric: "1.7 MB · ~5 ms",               text: "Within 1% of RF validation RMSE at ~1/360th the size — optimal accuracy-footprint trade-off for deployment." },
   { title: "Best Accuracy",      model: "Random Forest",color: "#3b82f6", icon: "🌲", metric: "26.59 µA RMSE (val)",           text: "Ensemble averaging over 300 trees — lowest validation RMSE, best within-distribution interpolation performance." },
-  { title: "Cross-Material",     model: "GRU",          color: "#f472b6", icon: "🔬", metric: "R² 0.9751 — unseen NM4",        text: "GRU predicts ZnO/Co₃O₄ with no NM4 training examples — generalises CV topology, not material-specific patterns." },
+  { title: "Cross-Material",     model: "GRU",          color: "#f472b6", icon: "🔬", metric: "R² 0.9751 — unseen NM4",        text: "GRU predicts NM4 (unseen experimental sample) with no NM4 training examples — generalises CV topology, not material-specific patterns." },
   { title: "Smallest Model",     model: "ANN",          color: "#facc15", icon: "💨", metric: "176 KB",                        text: "Smallest model at 176 KB — a point-wise MLP research baseline without sequential state representation." },
   { title: "Best Regularisation",model: "XGBoost",      color: "#fb923c", icon: "📊", metric: "28.83 µA at 268 KB",           text: "L1+L2 regularised boosting — competitive accuracy with excellent complexity control and 268 KB footprint." },
 ];
@@ -59,7 +60,7 @@ export default function Dashboard() {
     [predResults]
   );
 
-  const best      = leaderboard[0];
+  const best = leaderboard[0];
   const bestDeploy = leaderboard.find((r) => r.model_id === "lightgbm");
   const bestExtrap = leaderboard.find((r) => r.model_id === "gru");
 
@@ -106,7 +107,7 @@ export default function Dashboard() {
                   <Box component="span" sx={{ color: "#00d4ff" }}> Research Platform</Box>
                 </Typography>
                 <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.38)", lineHeight: 1.6, mb: 1.5, fontSize: "0.78rem", maxWidth: 460 }}>
-                  651-point cyclic voltammetry prediction across 6 ML architectures and 4 ZnO nanocomposites.
+                  651-point cyclic voltammetry prediction across 6 ML architectures and 4 ZnO electrode material groups.
                 </Typography>
                 <Box sx={{ display: "flex", gap: 0.65, flexWrap: "wrap" }}>
                   {[
@@ -114,7 +115,7 @@ export default function Dashboard() {
                     { label: "6 ML Models", color: "#22d3ee" },
                     { label: "24 CV Curves", color: "#a78bfa" },
                     { label: "Real-time", color: "#f59e0b" },
-                    { label: "4 Nanocomposites", color: "#f472b6" },
+                    { label: "4 Material Groups", color: "#f472b6" },
                   ].map((b) => (
                     <Chip key={b.label} label={b.label} size="small"
                       sx={{ fontSize: "0.6rem", height: 18, backgroundColor: alpha(b.color, 0.1), color: b.color, border: `1px solid ${alpha(b.color, 0.2)}`, fontWeight: 600 }} />
@@ -130,20 +131,161 @@ export default function Dashboard() {
                 minWidth: 0,
               }}>
                 {[
-                  { label: "Best RMSE",    value: lbLoading ? "—" : `${best?.rmse_val_uA?.toFixed(1) ?? "—"} µA`,  sub: best?.model_display ?? "…",      color: "#22d3ee" },
-                  { label: "Best Generalisation R²", value: lbLoading ? "—" : (bestExtrap?.r2_test_mat?.toFixed(4) ?? "—"), sub: "GRU · NM4 cross-material",         color: "#a78bfa" },
-                  { label: "Deploy",       value: lbLoading ? "—" : fmtMB(bestDeploy?.size_MB),                   sub: "LightGBM · ~5 ms",                color: "#10b981" },
-                  { label: "Loaded",       value: healthLoading ? "—" : `${health?.models_loaded?.length ?? 0}/6`, sub: "hot + lazy tiers",                color: "#f59e0b" },
-                ].map((kpi) => (
-                  <Box key={kpi.label} sx={{ p: 1.25, borderRadius: 1.5, background: alpha(kpi.color, 0.07), border: `1px solid ${alpha(kpi.color, 0.17)}`, textAlign: "center", minWidth: 0 }}>
+                  {
+                    label: "Best RMSE",
+                    color: "#22d3ee",
+                    sub: best?.model_display ?? "…",
+                    numericValue: best?.rmse_val_uA ?? 0,
+                    decimals: 1,
+                    suffix: " µA",
+                  },
+                  {
+                    label: "Best Gen. R²",
+                    color: "#a78bfa",
+                    sub: "GRU · NM4 cross-material",
+                    numericValue: bestExtrap?.r2_test_mat ?? 0,
+                    decimals: 4,
+                    suffix: "",
+                  },
+                  {
+                    label: "Deploy",
+                    color: "#10b981",
+                    sub: "LightGBM · ~5 ms",
+                    numericValue: (bestDeploy?.size_MB ?? 0) < 1 ? (bestDeploy?.size_MB ?? 0) * 1000 : (bestDeploy?.size_MB ?? 0),
+                    decimals: (bestDeploy?.size_MB ?? 0) < 1 ? 0 : 1,
+                    suffix: (bestDeploy?.size_MB ?? 0) < 1 ? " KB" : " MB",
+                  },
+                  {
+                    label: "Loaded",
+                    color: "#f59e0b",
+                    sub: "hot + lazy tiers",
+                    numericValue: health?.models_loaded?.length ?? 0,
+                    decimals: 0,
+                    suffix: "/6",
+                  },
+                ].map((kpi, i) => (
+                  <motion.div
+                    key={kpi.label}
+                    initial={{ opacity: 0, scale: 0.88 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.18 + i * 0.07, duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                  <Box sx={{ p: 1.25, borderRadius: 1.5, background: alpha(kpi.color, 0.07), border: `1px solid ${alpha(kpi.color, 0.17)}`, textAlign: "center", minWidth: 0 }}>
                     <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.28)", fontSize: "0.55rem", display: "block", mb: 0.25 }}>{kpi.label}</Typography>
                     {lbLoading || healthLoading
                       ? <Skeleton width={52} height={20} sx={{ mx: "auto" }} />
-                      : <Typography sx={{ color: kpi.color, fontFamily: "JetBrains Mono", fontWeight: 800, fontSize: { xs: "0.78rem", md: "0.9rem" }, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{kpi.value}</Typography>}
+                      : <AnimatedCounter
+                          key={kpi.label}
+                          target={kpi.numericValue}
+                          decimals={kpi.decimals}
+                          suffix={kpi.suffix}
+                          duration={1200}
+                          startOnView={false}
+                          sx={{ color: kpi.color, fontFamily: "JetBrains Mono", fontWeight: 800, fontSize: { xs: "0.78rem", md: "0.9rem" }, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}
+                        />}
                     <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.2)", fontSize: "0.55rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}>{kpi.sub}</Typography>
                   </Box>
+                  </motion.div>
                 ))}
               </Box>
+            </Box>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* ══ PROJECT OVERVIEW ═════════════════════════════════════════════ */}
+      <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12, duration: 0.42, ease: [0.16, 1, 0.3, 1] }}>
+        <Card sx={{ mb: 2, background: "rgba(8,14,24,0.9)", border: "1px solid rgba(255,255,255,0.065)" }}>
+          <CardContent sx={{ p: { xs: 2, md: 2.5 } }}>
+            {/* Header */}
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.75 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.85 }}>
+                <ScienceRounded sx={{ color: "#00d4ff", fontSize: 15 }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, fontSize: "0.82rem" }}>Platform Overview</Typography>
+              </Box>
+              <GlowButton variant="outlined" size="small" onClick={() => navigate(ROUTES.ABOUT)}
+                sx={{ fontSize: "0.62rem", py: 0.2, px: 0.85 }}>
+                Full Methodology →
+              </GlowButton>
+            </Box>
+
+            {/* Two-column layout: description + workflow */}
+            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: { xs: 2, md: 3 } }}>
+
+              {/* Left: description + quick-action chips */}
+              <Box>
+                <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.48)", fontSize: "0.76rem", lineHeight: 1.75, mb: 1.5 }}>
+                  This platform predicts complete 651-point cyclic voltammetry profiles for
+                  ZnO-based supercapacitor electrodes using six ML architectures trained on
+                  real experimental data. Physical CV measurements require laboratory equipment
+                  and electrode preparation — trained models replicate those profiles in
+                  milliseconds without running the experiment.
+                </Typography>
+                <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.48)", fontSize: "0.76rem", lineHeight: 1.75, mb: 2 }}>
+                  CV curves are highly non-linear functions of scan rate, electrode potential,
+                  and sweep direction. ML captures these dependencies directly from data, achieving
+                  R² {">"} 0.96 even on an unseen electrode material — zero-shot cross-material
+                  generalisation to NM4 without any NM4 training examples.
+                </Typography>
+
+                <Typography variant="caption" sx={{ color: "#00d4ff", fontWeight: 700, fontSize: "0.58rem", letterSpacing: "0.08em", display: "block", mb: 0.85 }}>EXPLORE THE PLATFORM</Typography>
+                <Box sx={{ display: "flex", gap: 0.65, flexWrap: "wrap" }}>
+                  {[
+                    { label: "Predict CV Curves",    route: ROUTES.PREDICTION_STUDIO,  color: "#00d4ff" },
+                    { label: "Compare Models",        route: ROUTES.MODEL_COMPARISON,   color: "#a78bfa" },
+                    { label: "Validate Results",      route: ROUTES.VALIDATION,         color: "#10b981" },
+                    { label: "Research Analytics",    route: ROUTES.RESEARCH_ANALYTICS, color: "#f59e0b" },
+                    { label: "Model Encyclopedia",    route: ROUTES.MODEL_ENCYCLOPEDIA, color: "#22d3ee" },
+                  ].map((item) => (
+                    <Chip key={item.label} label={item.label} size="small"
+                      onClick={() => navigate(item.route)}
+                      sx={{
+                        fontSize: "0.6rem", height: 22, fontWeight: 600, cursor: "pointer",
+                        backgroundColor: alpha(item.color, 0.08), color: item.color,
+                        border: `1px solid ${alpha(item.color, 0.22)}`,
+                        "&:hover": { backgroundColor: alpha(item.color, 0.15) },
+                        transition: "background-color 0.12s",
+                      }} />
+                  ))}
+                </Box>
+              </Box>
+
+              {/* Right: numbered research workflow */}
+              <Box>
+                <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.2)", fontWeight: 700, fontSize: "0.58rem", letterSpacing: "0.08em", display: "block", mb: 1.1 }}>RESEARCH WORKFLOW</Typography>
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
+                  {[
+                    { label: "Experimental Data",       desc: "CV curves at 10 scan rates × 4 ZnO electrode materials",          color: "#22d3ee", step: "01" },
+                    { label: "Feature Engineering",     desc: "10 features — direction×potential, log(SR), sweep position",       color: "#10b981", step: "02" },
+                    { label: "ML Training",             desc: "6 architectures: RF, LightGBM, XGBoost, ANN, LSTM, GRU",           color: "#a78bfa", step: "03" },
+                    { label: "Prediction",              desc: "651-point CV profile output in ~5 ms at any scan rate",            color: "#f59e0b", step: "04" },
+                    { label: "Electrochemical Analysis",desc: "Peak currents, symmetry, capacitance, RMSE and R² metrics",        color: "#f472b6", step: "05" },
+                    { label: "Model Comparison",        desc: "Cross-architecture performance across 4 evaluation partitions",    color: "#3b82f6", step: "06" },
+                  ].map((wf, i) => (
+                    <motion.div
+                      key={wf.step}
+                      initial={{ opacity: 0, x: 14 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.22 + i * 0.07, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                      <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.1 }}>
+                        <Box sx={{
+                          width: 22, height: 22, borderRadius: "50%", flexShrink: 0,
+                          background: alpha(wf.color, 0.12), border: `1px solid ${alpha(wf.color, 0.32)}`,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                        }}>
+                          <Typography sx={{ color: wf.color, fontSize: "0.5rem", fontWeight: 800, fontFamily: "JetBrains Mono" }}>{wf.step}</Typography>
+                        </Box>
+                        <Box sx={{ minWidth: 0 }}>
+                          <Typography variant="caption" sx={{ color: "#f1f5f9", fontWeight: 700, fontSize: "0.72rem", display: "block" }}>{wf.label}</Typography>
+                          <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.28)", fontSize: "0.62rem", lineHeight: 1.4 }}>{wf.desc}</Typography>
+                        </Box>
+                      </Box>
+                    </motion.div>
+                  ))}
+                </Box>
+              </Box>
+
             </Box>
           </CardContent>
         </Card>
@@ -281,6 +423,11 @@ export default function Dashboard() {
                   ? <Skeleton variant="rounded" height={140} />
                   : sparkData
                     ? (
+                      <motion.div
+                        variants={lineDrawVariants}
+                        initial="initial"
+                        animate="animate"
+                      >
                       <Plot
                         data={[{
                           x: sparkData.potential, y: sparkData.current,
@@ -299,6 +446,7 @@ export default function Dashboard() {
                         config={{ responsive: true, displayModeBar: false }}
                         style={{ width: "100%", height: 140 }} useResizeHandler
                       />
+                      </motion.div>
                     )
                     : (
                       <Box sx={{ height: 140, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -388,7 +536,7 @@ export default function Dashboard() {
                 ) : (
                   recentPredictions.map((r, i) => {
                     const color = MODEL_COLORS[r.model_name] ?? "#94a3b8";
-                    const peak  = Math.max(r.statistics.peak_anodic_uA, Math.abs(r.statistics.peak_cathodic_uA));
+                    const peak = Math.max(r.statistics.peak_anodic_uA, Math.abs(r.statistics.peak_cathodic_uA));
                     return (
                       <Box key={`${r.model_name}_${r.material_id}_${r.scan_rate_mVs}`} onClick={() => navigate(ROUTES.PREDICTION_STUDIO)}
                         sx={{ display: "flex", alignItems: "center", gap: 1.1, py: 0.75, px: 1, borderRadius: 1.5, mb: 0.45, cursor: "pointer", background: i === 0 ? alpha(color, 0.055) : "transparent", border: `1px solid ${i === 0 ? alpha(color, 0.13) : "rgba(255,255,255,0.035)"}`, "&:hover": { background: alpha(color, 0.08) }, transition: "background 0.12s", minWidth: 0 }}>

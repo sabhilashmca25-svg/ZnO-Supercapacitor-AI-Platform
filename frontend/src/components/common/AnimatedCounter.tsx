@@ -24,22 +24,29 @@ export default function AnimatedCounter({
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true });
   const hasStarted = useRef(false);
+  const prevTarget = useRef(target);
 
   useEffect(() => {
+    // Reset animation when target changes to a meaningful value
+    if (target !== prevTarget.current) {
+      prevTarget.current = target;
+      if (target !== 0) hasStarted.current = false;
+    }
     if (startOnView && !isInView) return;
     if (hasStarted.current) return;
     hasStarted.current = true;
 
+    setCurrent(0);
     const startTime = performance.now();
-    const tick = (now: number) => {
-      const elapsed = now - startTime;
+    const intervalId = setInterval(() => {
+      const elapsed = performance.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
       // ease-out cubic
       const eased = 1 - Math.pow(1 - progress, 3);
       setCurrent(target * eased);
-      if (progress < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
+      if (progress >= 1) clearInterval(intervalId);
+    }, 16);
+    return () => clearInterval(intervalId);
   }, [isInView, startOnView, target, duration]);
 
   return (

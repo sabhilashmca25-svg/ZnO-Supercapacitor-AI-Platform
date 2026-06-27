@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Tooltip, Typography, alpha } from "@mui/material";
+import { Box, Tooltip, Typography } from "@mui/material";
 import { GLOSSARY } from "../../constants/glossary";
 
 interface GlossaryTooltipProps {

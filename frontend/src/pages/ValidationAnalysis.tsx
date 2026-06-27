@@ -17,7 +17,6 @@ import {
   Button, Alert, CircularProgress, Paper,
   Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Divider, Skeleton,
-  ToggleButton, ToggleButtonGroup,
 } from "@mui/material";
 import {
   ScienceRounded, BarChartRounded,
@@ -39,12 +38,20 @@ import { splitCVBranches, buildMasterHoverTrace } from "../components/charts/CVP
 
 const MODELS = ["rf", "lightgbm", "xgboost", "gru", "lstm", "ann"];
 const MODEL_LABELS: Record<string, string> = {
-  rf: "Random Forest", lightgbm: "LightGBM", xgboost: "XGBoost",
-  gru: "GRU", lstm: "LSTM", ann: "ANN",
+  rf: "Random Forest",
+  lightgbm: "LightGBM",
+  xgboost: "XGBoost",
+  gru: "GRU",
+  lstm: "LSTM",
+  ann: "ANN",
 };
 const MODEL_COLORS: Record<string, string> = {
-  rf: "#00d4ff", lightgbm: "#7c3aed", xgboost: "#f59e0b",
-  gru: "#10b981", lstm: "#f43f5e", ann: "#64748b",
+  rf: "#00d4ff",
+  lightgbm: "#7c3aed",
+  xgboost: "#f59e0b",
+  gru: "#10b981",
+  lstm: "#f43f5e",
+  ann: "#64748b",
 };
 const MATERIALS = ["NM1", "NM2", "NM3", "NM4"];
 const SCAN_RATES = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
@@ -73,7 +80,7 @@ const SPLIT_LABELS: Record<string, string> = {
 const DARK_PAPER = "rgba(13,19,33,0.85)";
 const PLOTLY_LAYOUT_BASE = {
   paper_bgcolor: "rgba(0,0,0,0)",
-  plot_bgcolor:  "rgba(0,0,0,0)",
+  plot_bgcolor: "rgba(0,0,0,0)",
   font: { family: "Inter, sans-serif", color: "#94a3b8", size: 12 },
   margin: { t: 40, r: 20, b: 60, l: 60 },
   legend: { bgcolor: "rgba(0,0,0,0)", bordercolor: "rgba(255,255,255,0.1)", borderwidth: 1, font: { size: 11 } },
@@ -317,7 +324,7 @@ function ResidualsTab({ data }: { data: ValidationCompareResponse | null }) {
   const potentials = data.residual_potential_V;
   const absResiduals = data.abs_residual_uA;
   const mean = residuals.reduce((a, b) => a + b, 0) / residuals.length;
-  const std  = Math.sqrt(residuals.reduce((a, b) => a + (b - mean) ** 2, 0) / residuals.length);
+  const std = Math.sqrt(residuals.reduce((a, b) => a + (b - mean) ** 2, 0) / residuals.length);
   const pct10 = (residuals.filter(r => Math.abs(r) < 10).length / residuals.length * 100).toFixed(1);
   const pct20 = (residuals.filter(r => Math.abs(r) < 20).length / residuals.length * 100).toFixed(1);
   const chartH = typeof window !== "undefined" && window.innerWidth < 600 ? 280 : 350;
@@ -462,13 +469,13 @@ function PerformanceMapTab({ pgData, pgLoading, pgError, pgModel, setPgModel }: 
 
   // Heatmap data: rows = materials, cols = scan rates (only test_mat for NM4)
   const testMatRows = pgData?.rows.filter(r => r.partition === "test_mat") ?? [];
-  const valRows     = pgData?.rows.filter(r => r.partition === "val") ?? [];
-  const testSrRows  = pgData?.rows.filter(r => r.partition === "test_sr") ?? [];
+  const valRows = pgData?.rows.filter(r => r.partition === "val") ?? [];
+  const testSrRows = pgData?.rows.filter(r => r.partition === "test_sr") ?? [];
 
   // For NM4 heatmap (all scan rates)
   const nm4ScanRates = [...new Set(testMatRows.map(r => r.scan_rate_mVs))].sort((a,b) => a-b);
-  const nm4Rmse      = nm4ScanRates.map(sr => testMatRows.find(r => r.scan_rate_mVs === sr)?.rmse_uA ?? null);
-  const nm4R2        = nm4ScanRates.map(sr => testMatRows.find(r => r.scan_rate_mVs === sr)?.r2 ?? null);
+  const nm4Rmse = nm4ScanRates.map(sr => testMatRows.find(r => r.scan_rate_mVs === sr)?.rmse_uA ?? null);
+  const nm4R2 = nm4ScanRates.map(sr => testMatRows.find(r => r.scan_rate_mVs === sr)?.r2 ?? null);
 
   // Bar chart: all evaluation rows by material
   const allRows = [...valRows, ...testSrRows, ...testMatRows];
@@ -650,7 +657,7 @@ function MethodologyTab() {
             items: [
               "Real ZnO supercapacitor CV measurements (4 materials × 10 scan rates)",
               "104,000 data points across 4 complete electrochemical materials",
-              "Potential range: −0.65 V to 0 V (vs. Ag/AgCl reference electrode)",
+              "Potential range: −0.65 V to 0 V (vs. SCE — Saturated Calomel Electrode)",
               "Scan rates: 10 to 100 mV/s in 10 mV/s steps",
               "Stored in master_long_format.parquet — no fabrication or simulation",
             ],
@@ -766,9 +773,9 @@ export default function ValidationAnalysis() {
   // Run validation comparison — capture selection at call time to guard against
   // the user changing dropdowns while the request is in flight
   const handleRun = useCallback(async () => {
-    const reqModel    = model;
+    const reqModel = model;
     const reqMaterial = material;
-    const reqSR       = scanRate;
+    const reqSR = scanRate;
     setLoading(true);
     setError(null);
     try {

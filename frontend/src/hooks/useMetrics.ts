@@ -3,8 +3,12 @@ import { getAllMetrics } from "../api/endpoints";
 import type { ModelMetrics } from "../types";
 
 const MODEL_DISPLAY: Record<string, string> = {
-  rf: "Random Forest", lightgbm: "LightGBM", xgboost: "XGBoost",
-  gru: "Stacked GRU", lstm: "Stacked LSTM", ann: "Dense ANN",
+  rf: "Random Forest",
+  lightgbm: "LightGBM",
+  xgboost: "XGBoost",
+  gru: "Stacked GRU",
+  lstm: "Stacked LSTM",
+  ann: "Dense ANN",
 };
 
 export function useMetrics() {
@@ -26,9 +30,9 @@ export function useMetrics() {
           model_display: m.model_display ?? MODEL_DISPLAY[model_id] ?? model_id.toUpperCase(),
           metrics: (m.metrics ?? []).map((p: any) => ({
             partition: p.partition ?? "",
-            rmse_uA:   Number(p.rmse_uA  ?? p.RMSE_uA  ?? 0),
-            r2:        Number(p.r2       ?? p.R2       ?? 0),
-            mae_uA:    p.mae_uA  != null ? Number(p.mae_uA)  : p.MAE_uA  != null ? Number(p.MAE_uA)  : null,
+            rmse_uA: Number(p.rmse_uA ?? p.RMSE_uA ?? 0),
+            r2: Number(p.r2 ?? p.R2 ?? 0),
+            mae_uA: p.mae_uA != null ? Number(p.mae_uA) : p.MAE_uA != null ? Number(p.MAE_uA) : null,
           })),
         }));
 

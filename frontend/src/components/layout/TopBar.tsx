@@ -13,22 +13,23 @@ import {
   MenuRounded,
   OpenInNewRounded,
   FiberManualRecordRounded,
+  GetAppRounded,
 } from "@mui/icons-material";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { SIDEBAR_WIDTH } from "./Sidebar";
 import { useHealth } from "../../hooks/useHealth";
+import { usePWAInstall } from "../../hooks/usePWAInstall";
 import { ROUTES } from "../../constants/routes";
 
 const PAGE_TITLES: Record<string, string> = {
-  [ROUTES.DASHBOARD]:          "Dashboard",
-  [ROUTES.PREDICTION_STUDIO]:  "Prediction Studio",
-  [ROUTES.MODEL_COMPARISON]:   "Model Comparison",
+  [ROUTES.DASHBOARD]: "Dashboard",
+  [ROUTES.PREDICTION_STUDIO]: "Prediction Studio",
+  [ROUTES.MODEL_COMPARISON]: "Model Comparison",
   [ROUTES.RESEARCH_ANALYTICS]: "Research Analytics",
-  [ROUTES.VALIDATION]:         "Validation Analysis",
-  [ROUTES.BENCHMARKS]:         "Benchmark Results",
+  [ROUTES.VALIDATION]: "Validation Analysis",
+  [ROUTES.BENCHMARKS]: "Benchmark Results",
   [ROUTES.MODEL_ENCYCLOPEDIA]: "Model Encyclopedia",
-  [ROUTES.ABOUT]:              "About Research",
+  [ROUTES.ABOUT]: "About Research",
 };
 
 interface TopBarProps {
@@ -38,10 +39,11 @@ interface TopBarProps {
 export default function TopBar({ onMenuClick }: TopBarProps) {
   const { pathname } = useLocation();
   const { health } = useHealth(60_000);
-  const navigate = useNavigate();
 
-  const pageTitle   = PAGE_TITLES[pathname] ?? "ZnO AI Platform";
-  const isOnline    = health?.status === "ok";
+  const { canInstall, install } = usePWAInstall();
+
+  const pageTitle = PAGE_TITLES[pathname] ?? "ZnO AI Platform";
+  const isOnline = health?.status === "ok";
   const modelsLoaded = health?.models_loaded ?? [];
 
   return (
@@ -148,6 +150,36 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
             </Typography>
           </Box>
         </Tooltip>
+
+        {/* ── Install PWA button — only shown when installable ──────── */}
+        {canInstall && (
+          <Tooltip title="Install ZnO AI Platform as an app" arrow>
+            <Chip
+              icon={<GetAppRounded sx={{ fontSize: "13px !important" }} />}
+              label="Install"
+              size="small"
+              onClick={install}
+              sx={{
+                ml: 0.75,
+                height: 24,
+                fontSize: "0.62rem",
+                fontWeight: 700,
+                letterSpacing: "0.05em",
+                backgroundColor: "rgba(0,212,255,0.08)",
+                color: "#00d4ff",
+                border: "1px solid rgba(0,212,255,0.25)",
+                cursor: "pointer",
+                display: { xs: "none", sm: "flex" },
+                "&:hover": {
+                  backgroundColor: "rgba(0,212,255,0.14)",
+                  borderColor: "rgba(0,212,255,0.45)",
+                },
+                "& .MuiChip-label": { px: 1 },
+                "& .MuiChip-icon": { ml: 0.75 },
+              }}
+            />
+          </Tooltip>
+        )}
 
         {/* ── Swagger link — hidden on mobile ─────────────────────── */}
         <Tooltip title="Open Swagger API Docs" arrow>

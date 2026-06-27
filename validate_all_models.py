@@ -15,7 +15,11 @@ warnings.filterwarnings("ignore")
 BASE    = Path(__file__).parent
 DATA    = BASE / "data" / "processed"
 MODELS  = BASE / "models"
-TRUTH   = Path(r"D:\mca\2nd semester\PBL Project\comparison_inputs")
+# Ground-truth comparison files (Colab training outputs).
+# Set env var TRUTH_PATH to override, or place files in research/comparison_inputs/.
+import os as _os
+TRUTH   = Path(_os.environ.get("TRUTH_PATH", "")) if _os.environ.get("TRUTH_PATH") \
+          else BASE / "research" / "comparison_inputs"
 
 FEATURES = [
     "potential_V_norm", "scan_rate_mVs_norm", "log_scan_rate_norm",
@@ -45,7 +49,10 @@ def compute_metrics(df, pred_norm, label):
             "MaxErr_uA": maxerr_uA, "R2": r2}
 
 def load_truth(fname):
-    with open(TRUTH / fname) as f:
+    fpath = TRUTH / fname
+    if not fpath.exists():
+        return None
+    with open(fpath) as f:
         d = json.load(f)
     # map short key -> truth row
     out = {}

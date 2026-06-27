@@ -47,13 +47,24 @@ ZnO_Supercapacitor_AI_Platform/
 ├── backend/        FastAPI Python API (6 model endpoints)
 ├── frontend/       React + MUI + Plotly PWA (8 pages)
 ├── models/         Trained model files + metadata
-├── research/       All notebooks, figures, metrics (ML phase)
+├── research/       Metrics, exports, training histories (ML phase)
 ├── data/           Processed parquet datasets + scalers
 ├── src/            Notebook builder scripts
-├── deployment/     Render + Vercel + Docker configs
-├── reports/        Paper, presentation, project report
 └── docs/           Technical documentation
 ```
+
+---
+
+## System Requirements
+
+| Tool | Minimum version |
+|------|----------------|
+| Python | 3.11 |
+| Node.js | 18 |
+| Git | Any recent version |
+| OS | Windows 10 / macOS 12 / Ubuntu 20.04 |
+
+> TensorFlow (required for GRU / LSTM / ANN) supports Python 3.11–3.13.
 
 ---
 
@@ -62,26 +73,38 @@ ZnO_Supercapacitor_AI_Platform/
 ### Backend
 ```bash
 cd backend
-python -m venv .venv && source .venv/bin/activate
+
+# Create and activate virtual environment
+python -m venv venv
+venv\Scripts\activate        # Windows
+# source venv/bin/activate   # macOS / Linux
+
 pip install -r requirements.txt
-cp ../.env.example .env          # edit MODEL_DIR if needed
-uvicorn app.main:app --reload --port 8000
+
+# (Optional) copy .env.example to .env to customise settings
+# cp .env.example .env
+
+uvicorn app.main:app --host 0.0.0.0 --port 8000
 # Swagger UI: http://localhost:8000/docs
+# Health API: http://localhost:8000/api/v1/health
 ```
+
+> First startup loads all ML models — allow ~30–60 s before the API badge turns green.
+
+> **No RF model?** The backend starts fine without `models/rf/rf_baseline.joblib`. All 5 other models (LightGBM, XGBoost, GRU, LSTM, ANN) load and serve predictions normally. RF predictions return an error until the file is placed manually.
 
 ### Frontend
 ```bash
 cd frontend
 npm install
-# create .env.development with: VITE_API_URL=http://localhost:8000
 npm run dev
 # App: http://localhost:5173
 ```
 
-### Full Stack (Docker)
-```bash
-docker-compose -f deployment/docker/docker-compose.yml up --build
-```
+> The Vite dev server proxies `/api/*` to `http://127.0.0.1:8000` automatically — no `.env` needed for local development.
+
+### Windows one-click
+Double-click **`START_APP.bat`** at the project root — it launches both servers and opens the browser automatically.
 
 ---
 
@@ -102,12 +125,18 @@ All notebooks live in `research/notebooks/`.
 
 ---
 
-## Deployment
+## Model Files
 
-See `docs/deployment/` for step-by-step guides.
-- **Backend → Render.com**: uses `deployment/render/render.yaml`
-- **Frontend → Vercel**: uses `deployment/vercel/vercel.json`
-- **Self-hosted → Docker**: uses `deployment/docker/docker-compose.yml`
+| Model | File | Size | Committed? |
+|---|---|---|---|
+| Random Forest | `models/rf/rf_baseline.joblib` | ~201 MB | ❌ — exceeds GitHub 100 MB limit |
+| LightGBM | `models/lightgbm/lightgbm_model.joblib` | 1.7 MB | ✓ |
+| XGBoost | `models/xgboost/xgboost_model.joblib` | 0.27 MB | ✓ |
+| GRU | `models/gru/gru_model.keras` | 0.34 MB | ✓ |
+| LSTM | `models/lstm/lstm_model.keras` | 0.43 MB | ✓ |
+| ANN | `models/ann/ann_model.keras` | 0.18 MB | ✓ |
+
+> Place `rf_baseline.joblib` manually in `models/rf/` after cloning to enable Random Forest predictions. All 5 other models work without it.
 
 ---
 

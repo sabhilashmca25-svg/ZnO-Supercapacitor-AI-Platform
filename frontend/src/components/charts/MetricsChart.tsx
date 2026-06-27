@@ -3,6 +3,7 @@ import Plot from "react-plotly.js";
 import { motion } from "framer-motion";
 import type { LeaderboardEntry, ComparisonRow } from "../../types";
 import { MODEL_COLORS } from "../../constants/models";
+import { hBarGrowVariants, vBarGrowVariants } from "../../animations/variants";
 
 /* ── Shared dark layout ──────────────────────────────────────────────────── */
 const baseLayout: Partial<Plotly.Layout> = {
@@ -75,10 +76,10 @@ export function RMSEBarChart({ leaderboard, height = 280 }: RMSEChartProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, scaleY: 0.92 }}
-      animate={{ opacity: 1, scaleY: 1 }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      style={{ width: "100%", transformOrigin: "bottom" }}
+      variants={hBarGrowVariants}
+      initial="initial"
+      animate="animate"
+      style={{ width: "100%" }}
     >
       <Plot data={data} layout={layout} config={baseConfig} style={{ width: "100%", height }} useResizeHandler />
     </motion.div>
@@ -92,7 +93,7 @@ export function RMSEBarChart({ leaderboard, height = 280 }: RMSEChartProps) {
  * kept separately so the lookup never fails.
  */
 
-const PARTITION_KEYS  = ["train", "val", "test_SR", "test_MAT"] as const;
+const PARTITION_KEYS = ["train", "val", "test_SR", "test_MAT"] as const;
 const PARTITION_LABELS = ["Train", "Val (SR=30)", "Test-SR", "Test-MAT (NM4)"] as const;
 
 interface R2ChartProps {
@@ -160,10 +161,10 @@ export function R2GroupedChart({ rows, height = 320 }: R2ChartProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, scaleY: 0.92 }}
-      animate={{ opacity: 1, scaleY: 1 }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      style={{ width: "100%", transformOrigin: "bottom" }}
+      variants={vBarGrowVariants}
+      initial="initial"
+      animate="animate"
+      style={{ width: "100%" }}
     >
       <Plot data={traces} layout={layout} config={baseConfig} style={{ width: "100%", height }} useResizeHandler />
     </motion.div>
@@ -226,10 +227,10 @@ export function SizeVsRMSEScatter({ leaderboard, height = 300 }: SizeVsRMSEProps
 
   return (
     <motion.div
-      initial={{ opacity: 0, scaleY: 0.92 }}
-      animate={{ opacity: 1, scaleY: 1 }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      style={{ width: "100%", transformOrigin: "bottom" }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      style={{ width: "100%" }}
     >
       <Plot data={data} layout={layout} config={baseConfig} style={{ width: "100%", height }} useResizeHandler />
     </motion.div>

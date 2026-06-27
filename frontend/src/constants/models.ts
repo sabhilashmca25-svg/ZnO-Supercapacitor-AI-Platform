@@ -170,9 +170,9 @@ export const MODEL_MAP: Record<string, ModelConfig> = Object.fromEntries(
 // ── Material definitions ──────────────────────────────────────────────────
 export const MATERIALS = [
   { id: "NM1", label: "NM1 — ZnO baseline", color: "#3b82f6" },
-  { id: "NM2", label: "NM2 — ZnO/rGO", color: "#22d3ee" },
-  { id: "NM3", label: "NM3 — ZnO/MnO₂", color: "#a78bfa" },
-  { id: "NM4", label: "NM4 — ZnO/Co₃O₄ (test-MAT)", color: "#f472b6" },
+  { id: "NM2", label: "NM2 — Experimental Sample", color: "#22d3ee" },
+  { id: "NM3", label: "NM3 — Experimental Sample", color: "#a78bfa" },
+  { id: "NM4", label: "NM4 — Experimental Sample (test-MAT)", color: "#f472b6" },
 ];
 
 // ── Valid scan rates ──────────────────────────────────────────────────────

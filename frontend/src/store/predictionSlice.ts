@@ -53,6 +53,11 @@ const predictionSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    setLatestKey: (state, action) => {
+      if (action.payload === null || action.payload in state.results) {
+        state.latestKey = action.payload as string | null;
+      }
+    },
   },
   extraReducers: (builder) => {
     // ── Single prediction ────────────────────────────────────────────────
@@ -90,5 +95,5 @@ const predictionSlice = createSlice({
   },
 });
 
-export const { clearResults, clearComparison, clearError } = predictionSlice.actions;
+export const { clearResults, clearComparison, clearError, setLatestKey } = predictionSlice.actions;
 export default predictionSlice.reducer;

@@ -12,4 +12,6 @@ class LGBMPredictor(BasePredictor):
         model = model_registry.get("lightgbm")
         if model is None:
             raise RuntimeError("LightGBM model is not loaded. Check ENABLED_MODELS in .env")
-        return model.predict(features.values)
+        # validate_features=False: inference column names have _norm suffix but
+        # the model was trained without it; values are positionally correct.
+        return model.predict(features.values, validate_features=False)

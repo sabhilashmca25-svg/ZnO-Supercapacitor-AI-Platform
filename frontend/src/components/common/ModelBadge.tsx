@@ -11,7 +11,12 @@ interface ModelBadgeProps {
 }
 
 const MODEL_SHORT: Record<string, string> = {
-  rf: "RF", lightgbm: "LGB", xgboost: "XGB", gru: "GRU", lstm: "LSTM", ann: "ANN",
+  rf: "RF",
+  lightgbm: "LGB",
+  xgboost: "XGB",
+  gru: "GRU",
+  lstm: "LSTM",
+  ann: "ANN",
 };
 
 export default function ModelBadge({

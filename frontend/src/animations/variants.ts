@@ -182,3 +182,43 @@ export const loadingDot: Variants = {
     transition: { duration: 0.7, ease: "easeInOut", repeat: Infinity },
   },
 };
+
+// ── Chart animations — GPU-accelerated clip-path reveals ──────────────────
+// Line/scatter: draw curve left-to-right (clip right edge, reveal left→right)
+export const lineDrawVariants: Variants = {
+  initial: { opacity: 0, clipPath: "inset(0 100% 0 0)" },
+  animate: {
+    opacity: 1,
+    clipPath: "inset(0 0% 0 0)",
+    transition: { duration: 0.9, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+// Horizontal bar chart: bars grow left-to-right
+export const hBarGrowVariants: Variants = {
+  initial: { opacity: 0, clipPath: "inset(0 100% 0 0)" },
+  animate: {
+    opacity: 1,
+    clipPath: "inset(0 0% 0 0)",
+    transition: { duration: 0.75, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+// Vertical bar chart: bars grow from base upward
+export const vBarGrowVariants: Variants = {
+  initial: { opacity: 0, clipPath: "inset(100% 0 0 0)" },
+  animate: {
+    opacity: 1,
+    clipPath: "inset(0% 0 0 0)",
+    transition: { duration: 0.75, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+// Heatmap: fade in
+export const heatmapFadeVariants: Variants = {
+  initial: { opacity: 0 },
+  animate: {
+    opacity: 1,
+    transition: { duration: 0.5, ease: "easeOut" },
+  },
+};

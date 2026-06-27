@@ -15,9 +15,9 @@ const client = axios.create({
 });
 
 // ── Retry configuration ───────────────────────────────────────────────────────
-const MAX_RETRIES      = 2;
-const RETRY_DELAY_MS   = 800;
-const RETRYABLE_CODES  = new Set([502, 503, 504]); // gateway / service-unavailable
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 800;
+const RETRYABLE_CODES = new Set([502, 503, 504]); // gateway / service-unavailable
 
 function isRetryable(error: AxiosError): boolean {
   if (!error.response) return true; // network error / timeout — always retry
@@ -71,9 +71,9 @@ client.interceptors.response.use(
       raw?: unknown;
       isNetworkError?: boolean;
     };
-    enhanced.status          = status;
-    enhanced.raw             = error?.response?.data;
-    enhanced.isNetworkError  = !error.response; // true when server unreachable
+    enhanced.status = status;
+    enhanced.raw = error?.response?.data;
+    enhanced.isNetworkError = !error.response; // true when server unreachable
     return Promise.reject(enhanced);
   }
 );

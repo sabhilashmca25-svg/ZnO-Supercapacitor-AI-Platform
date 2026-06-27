@@ -46,18 +46,18 @@ export default class ErrorBoundary extends Component<Props, State> {
       return (
         <Box
           sx={{
-            display:        "flex",
-            flexDirection:  "column",
-            alignItems:     "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
             justifyContent: "center",
-            gap:            1.5,
-            py:             4,
-            px:             2,
-            borderRadius:   2,
-            border:         "1px solid rgba(255,80,80,0.2)",
-            background:     "rgba(255,50,50,0.05)",
-            minHeight:      120,
-            textAlign:      "center",
+            gap: 1.5,
+            py: 4,
+            px: 2,
+            borderRadius: 2,
+            border: "1px solid rgba(255,80,80,0.2)",
+            background: "rgba(255,50,50,0.05)",
+            minHeight: 120,
+            textAlign: "center",
           }}
         >
           <ErrorOutlineRounded sx={{ fontSize: 32, color: "rgba(255,100,100,0.7)" }} />
@@ -67,11 +67,11 @@ export default class ErrorBoundary extends Component<Props, State> {
           {this.state.message && (
             <Typography
               sx={{
-                color:      "rgba(255,255,255,0.25)",
-                fontSize:   "0.72rem",
+                color: "rgba(255,255,255,0.25)",
+                fontSize: "0.72rem",
                 fontFamily: "monospace",
-                maxWidth:   400,
-                wordBreak:  "break-word",
+                maxWidth: 400,
+                wordBreak: "break-word",
               }}
             >
               {this.state.message}
@@ -82,12 +82,12 @@ export default class ErrorBoundary extends Component<Props, State> {
             variant="outlined"
             onClick={this.handleRetry}
             sx={{
-              mt:           1,
-              borderColor:  "rgba(255,255,255,0.15)",
-              color:        "rgba(255,255,255,0.5)",
-              fontSize:     "0.75rem",
+              mt: 1,
+              borderColor: "rgba(255,255,255,0.15)",
+              color: "rgba(255,255,255,0.5)",
+              fontSize: "0.75rem",
               textTransform: "none",
-              "&:hover":    { borderColor: "#00d4ff", color: "#00d4ff" },
+              "&:hover": { borderColor: "#00d4ff", color: "#00d4ff" },
             }}
           >
             Retry

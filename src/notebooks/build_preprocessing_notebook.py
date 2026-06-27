@@ -1152,7 +1152,7 @@ nb.metadata.update({
     }
 })
 
-out_path = Path(r"D:/mca/2nd semester/PBL Project/notebooks/01_correct_preprocessing.ipynb")
+out_path = Path(__file__).resolve().parent.parent.parent / "research" / "notebooks" / "01_correct_preprocessing.ipynb"
 out_path.parent.mkdir(parents=True, exist_ok=True)
 nbf.write(nb, str(out_path))
 print(f"Written : {out_path}")

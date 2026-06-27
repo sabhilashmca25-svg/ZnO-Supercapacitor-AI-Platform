@@ -13,14 +13,14 @@ import Landing from "./pages/Landing";
 // the entire Plotly library into the initial JS bundle unnecessarily.
 // Each lazy() call creates its own JS chunk that is only downloaded when the
 // user first navigates to that route, keeping the initial bundle minimal.
-const Dashboard         = lazy(() => import("./pages/Dashboard"));
-const PredictionStudio  = lazy(() => import("./pages/PredictionStudio"));
-const ModelComparison   = lazy(() => import("./pages/ModelComparison"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const PredictionStudio = lazy(() => import("./pages/PredictionStudio"));
+const ModelComparison = lazy(() => import("./pages/ModelComparison"));
 const ResearchAnalytics = lazy(() => import("./pages/ResearchAnalytics"));
-const ValidationAnalysis= lazy(() => import("./pages/ValidationAnalysis"));
+const ValidationAnalysis = lazy(() => import("./pages/ValidationAnalysis"));
 const ModelEncyclopedia = lazy(() => import("./pages/ModelEncyclopedia"));
-const BenchmarkResults  = lazy(() => import("./pages/BenchmarkResults"));
-const About             = lazy(() => import("./pages/About"));
+const BenchmarkResults = lazy(() => import("./pages/BenchmarkResults"));
+const About = lazy(() => import("./pages/About"));
 
 // ── Page-level loading fallback ───────────────────────────────────────────────
 function PageLoader() {

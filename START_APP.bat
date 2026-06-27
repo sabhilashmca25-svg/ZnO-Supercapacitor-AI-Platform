@@ -1,39 +1,126 @@
 @echo off
-REM ─────────────────────────────────────────────────────────────────
-REM  ZnO Supercapacitor AI Platform — Start Everything
-REM  Double-click this file to launch both backend + frontend
-REM
-REM  Then open in browser:
-REM    PC      →  http://localhost:5173
-REM    Phone   →  http://192.168.1.3:5173  (same WiFi required)
-REM ─────────────────────────────────────────────────────────────────
+title ZnO Supercapacitor AI Platform - Setup and Start
+cd /d "%~dp0"
 
 echo.
-echo  ============================================================
-echo   ZnO Supercapacitor AI Platform
-echo  ============================================================
-echo.
-echo   PC     : http://localhost:5173
-echo   Phone  : http://192.168.1.3:5173
-echo.
-echo   Starting backend ...
-echo  ============================================================
+echo  ================================================================
+echo   ZnO Supercapacitor AI Platform  ^|  Setup ^& Launch
+echo  ================================================================
 echo.
 
-REM ── Start Backend in its own window ──────────────────────────────
-start "ZnO Backend (port 8000)" cmd /k "cd /d "%~dp0backend" && call venv\Scripts\activate.bat && python -m uvicorn app.main:app --host 0.0.0.0 --port 8000"
+REM -- [1/5] Check Python -------------------------------------------
+echo  [1/5] Checking Python ...
+python --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo.
+    echo  ERROR: Python is not installed or not found in PATH.
+    echo  1. Go to https://python.org/downloads
+    echo  2. Download Python 3.11 or newer
+    echo  3. During install CHECK "Add Python to PATH"
+    echo  4. Re-run START_APP.bat
+    echo.
+    pause
+    exit /b 1
+)
+for /f "tokens=*" %%v in ('python --version 2^>^&1') do echo   Found: %%v
 
-REM ── Give backend 3 seconds to boot before frontend starts ────────
-timeout /t 3 /nobreak > nul
+REM -- [2/5] Python virtual environment ----------------------------
+echo.
+echo  [2/5] Checking Python environment ...
 
-REM ── Start Frontend in its own window ─────────────────────────────
-start "ZnO Frontend (port 5173)" cmd /k "cd /d "%~dp0frontend" && npm run dev -- --host 0.0.0.0"
+if not exist "backend\venv\Scripts\python.exe" (
+    echo   Creating virtual environment ...
+    python -m venv backend\venv
+    if %errorlevel% neq 0 (
+        echo  ERROR: Could not create virtual environment.
+        pause
+        exit /b 1
+    )
+)
 
+REM Use goto to avoid nested-block errorlevel parse-time expansion bug
+backend\venv\Scripts\python.exe -c "import uvicorn" >nul 2>&1
+if %errorlevel% equ 0 goto :venv_ready
+
+echo   Installing packages ^(TensorFlow ~350MB, 10-30 min^) ...
+echo   If a Windows Security popup appears, click X to dismiss it.
+echo   Do NOT close this window.
 echo.
-echo  Both servers are starting in separate windows.
-echo  Wait ~10 seconds then open your browser.
+backend\venv\Scripts\python.exe -m pip install --upgrade pip --quiet
+backend\venv\Scripts\python.exe -m pip install -r backend\requirements.txt
+if %errorlevel% neq 0 (
+    echo.
+    echo  ERROR: pip install failed. Check internet and try again.
+    pause
+    exit /b 1
+)
 echo.
-echo   PC     : http://localhost:5173
-echo   Phone  : http://192.168.1.3:5173
+echo   Removing Windows security flags from installed files ...
+powershell -ExecutionPolicy Bypass -WindowStyle Hidden -Command "Get-ChildItem 'backend\venv' -Recurse -File | Unblock-File -ErrorAction SilentlyContinue"
+echo   Python environment ready!
+goto :node_check
+
+:venv_ready
+echo   Already installed - skipping.
+powershell -ExecutionPolicy Bypass -WindowStyle Hidden -Command "Get-ChildItem 'backend\venv' -Recurse -File | Unblock-File -ErrorAction SilentlyContinue"
+
+REM -- [3/5] Check Node.js -----------------------------------------
+:node_check
 echo.
+echo  [3/5] Checking Node.js ...
+node --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo.
+    echo  ERROR: Node.js not found.
+    echo  1. Go to https://nodejs.org  ^(LTS version^)
+    echo  2. Install with default options
+    echo  3. Re-run START_APP.bat
+    echo.
+    pause
+    exit /b 1
+)
+for /f "tokens=*" %%v in ('node --version 2^>^&1') do echo   Found: Node.js %%v
+for /f "tokens=*" %%v in ('npm --version 2^>^&1')  do echo   Found: npm v%%v
+
+REM -- [4/5] Frontend dependencies ---------------------------------
+echo.
+echo  [4/5] Checking frontend dependencies ...
+if exist "frontend\node_modules\vite\bin\vite.js" goto :npm_ready
+
+echo   Running npm install ^(2-5 min^) ...
+echo.
+pushd frontend
+npm install
+if %errorlevel% neq 0 (
+    popd
+    echo.
+    echo  ERROR: npm install failed. Check internet and try again.
+    pause
+    exit /b 1
+)
+popd
+echo   Frontend ready!
+goto :launch
+
+:npm_ready
+echo   Already installed - skipping.
+
+REM -- [5/5] Launch ------------------------------------------------
+:launch
+echo.
+echo  ================================================================
+echo   Starting application ...
+echo   Browser opens automatically ^(backend loads in ~45 sec^).
+echo   Local URL : http://localhost:5173
+echo   Stop app  : double-click STOP_APP.bat
+echo  ================================================================
+echo.
+
+backend\venv\Scripts\python.exe launcher.py
+if %errorlevel% neq 0 (
+    echo.
+    echo  ERROR: Launcher failed. See details above.
+    pause
+    exit /b 1
+)
 pause

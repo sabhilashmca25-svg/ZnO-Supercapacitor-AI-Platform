@@ -115,7 +115,7 @@ EXECUTION_MODE = "colab_upload"       # <<< CHANGE THIS IF NEEDED
 DRIVE_DATA_PATH = "/content/drive/MyDrive/PBL_Project/data/processed"
 
 # For "local" only — root of your PBL Project folder
-LOCAL_PROJECT_PATH = r"D:\\mca\\2nd semester\\PBL Project"
+LOCAL_PROJECT_PATH = str(Path(__file__).resolve().parent.parent.parent)
 
 # ── Required files ─────────────────────────────────────────────────────────────
 REQUIRED = [
@@ -1572,7 +1572,7 @@ nb.metadata.update({
     "colab": {"provenance": []},
 })
 
-out_path = Path(r"D:/mca/2nd semester/PBL Project/notebooks/05_lstm_model.ipynb")
+out_path = Path(__file__).resolve().parent.parent.parent / "research" / "notebooks" / "05_lstm_model.ipynb"
 out_path.parent.mkdir(parents=True, exist_ok=True)
 nbf.write(nb, str(out_path))
 print(f"Written : {out_path}")

@@ -33,8 +33,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import SectionHeader from "../components/common/SectionHeader";
 import ModelBadge from "../components/common/ModelBadge";
-import { MODELS } from "../constants/models";
-import { MODEL_COLORS } from "../constants/models";
+import { MODELS, MODEL_COLORS } from "../constants/models";
 import { cardVariants, staggerContainer, cardHover, cardTap } from "../animations/variants";
 
 const TIER_INFO: Record<string, { tier: 1 | 2; role: string; color: string }> = {

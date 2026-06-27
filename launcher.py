@@ -1,0 +1,313 @@
+"""
+ZnO Supercapacitor AI Platform — Smart Launcher
+
+Finds free ports dynamically so this project can run alongside other
+Vite/FastAPI projects without port conflicts.  Safe to double-click
+any number of times — a running instance is detected and its browser
+window is brought up instead of spawning duplicates.
+
+Lock file:  .launcher.lock   (auto-created, auto-removed by stop_app.py)
+"""
+from __future__ import annotations
+
+import json
+import os
+import shutil
+import socket
+import subprocess
+import sys
+import time
+import urllib.request
+import webbrowser
+from pathlib import Path
+
+CHROME_PATHS = [
+    r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+    r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+]
+
+
+def open_app_window(url: str) -> None:
+    """Open URL in Chrome standalone app window; fall back to default browser."""
+    for chrome in CHROME_PATHS:
+        if Path(chrome).exists():
+            subprocess.Popen([chrome, f"--app={url}"],
+                             creationflags=subprocess.CREATE_NO_WINDOW)
+            return
+    webbrowser.open(url)
+
+# ── Paths ──────────────────────────────────────────────────────────────────────
+ROOT         = Path(__file__).resolve().parent
+BACKEND_DIR  = ROOT / "backend"
+FRONTEND_DIR = ROOT / "frontend"
+VENV_PYTHON  = BACKEND_DIR / "venv" / "Scripts" / "python.exe"
+VITE_JS      = FRONTEND_DIR / "node_modules" / "vite" / "bin" / "vite.js"
+LOCK_FILE    = ROOT / ".launcher.lock"
+
+# ── Port search start ─────────────────────────────────────────────────────────
+BACKEND_PORT_START  = 8000
+FRONTEND_PORT_START = 5173
+
+# ── Timeouts (seconds) ────────────────────────────────────────────────────────
+FRONTEND_TIMEOUT = 30
+BACKEND_TIMEOUT  = 120   # RF model takes ~45 s to load
+
+SEP = "-" * 54
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Network helpers
+# ──────────────────────────────────────────────────────────────────────────────
+
+def port_in_use(port: int) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.settimeout(0.3)
+        return s.connect_ex(("127.0.0.1", port)) == 0
+
+
+def find_free_port(start: int) -> int:
+    p = start
+    while port_in_use(p):
+        p += 1
+    return p
+
+
+def http_ok(url: str, timeout: float = 3.0) -> bool:
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as r:
+            return r.status == 200
+    except Exception:
+        return False
+
+
+def wait_for_url(url: str, timeout: int, interval: float = 2.0) -> bool:
+    """Poll url until HTTP 200 or timeout expires.  Returns True on success."""
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        if http_ok(url):
+            return True
+        time.sleep(interval)
+    return False
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Lock file
+# ──────────────────────────────────────────────────────────────────────────────
+
+def write_lock(backend_port: int, frontend_port: int,
+               backend_pid: int, frontend_pid: int) -> None:
+    LOCK_FILE.write_text(json.dumps({
+        "backend_port":  backend_port,
+        "frontend_port": frontend_port,
+        "backend_pid":   backend_pid,
+        "frontend_pid":  frontend_pid,
+    }, indent=2), encoding="utf-8")
+
+
+def read_lock() -> dict | None:
+    try:
+        return json.loads(LOCK_FILE.read_text(encoding="utf-8")) if LOCK_FILE.exists() else None
+    except Exception:
+        return None
+
+
+def clear_lock() -> None:
+    LOCK_FILE.unlink(missing_ok=True)
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Process helpers
+# ──────────────────────────────────────────────────────────────────────────────
+
+def is_pid_alive(pid: int) -> bool:
+    """True if the Windows process with this PID is still running."""
+    r = subprocess.run(
+        ["tasklist", "/FI", f"PID eq {pid}", "/NH"],
+        capture_output=True, text=True,
+    )
+    return str(pid) in r.stdout
+
+
+def check_existing() -> dict | None:
+    """
+    Return lock data if this project is already running.
+    Removes a stale lock file when the processes have died.
+    """
+    data = read_lock()
+    if data is None:
+        return None
+
+    b_pid = data.get("backend_pid")
+    f_pid = data.get("frontend_pid")
+
+    if b_pid and f_pid and is_pid_alive(b_pid) and is_pid_alive(f_pid):
+        return data
+
+    clear_lock()
+    return None
+
+
+def _hidden_si() -> subprocess.STARTUPINFO:
+    """STARTUPINFO that hides the console window entirely (no taskbar icon)."""
+    si = subprocess.STARTUPINFO()
+    si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    si.wShowWindow = 0  # SW_HIDE
+    return si
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Service launchers
+# ──────────────────────────────────────────────────────────────────────────────
+
+def launch_backend(backend_port: int, frontend_port: int) -> subprocess.Popen:
+    """
+    Start uvicorn via the project venv.
+
+    Overrides ALLOWED_ORIGINS so CORS permits the dynamically chosen
+    frontend port, regardless of what is in backend/.env.
+    """
+    if not VENV_PYTHON.exists():
+        sys.exit(
+            f"\n  ERROR: Python virtual environment not found.\n"
+            f"  Close this window and run START_APP.bat — it installs\n"
+            f"  everything automatically on first run.\n"
+        )
+
+    env = os.environ.copy()
+
+    # pydantic-settings reads .env for everything else;
+    # we only override the two values that depend on runtime ports.
+    env["ALLOWED_ORIGINS"] = json.dumps([
+        f"http://localhost:{frontend_port}",
+        f"http://127.0.0.1:{frontend_port}",
+    ])
+
+    return subprocess.Popen(
+        [str(VENV_PYTHON), "-m", "uvicorn", "app.main:app",
+         "--host", "0.0.0.0", "--port", str(backend_port)],
+        cwd=str(BACKEND_DIR),
+        env=env,
+        startupinfo=_hidden_si(),
+        creationflags=subprocess.CREATE_NO_WINDOW,
+    )
+
+
+def launch_frontend(frontend_port: int, backend_port: int) -> subprocess.Popen:
+    """
+    Start Vite directly via node (bypasses npm.cmd shell wrapper so the
+    returned PID is the actual node process, not a transient cmd.exe).
+
+    Sets VITE_API_URL so axios calls the discovered backend port directly
+    instead of relying on the Vite proxy (which has a hardcoded target).
+    """
+    node_exe = shutil.which("node")
+    if node_exe is None:
+        sys.exit("\n  ERROR: 'node' not found in PATH.  Install Node.js.\n")
+    if not VITE_JS.exists():
+        sys.exit(
+            f"\n  ERROR: Frontend dependencies not installed.\n"
+            f"  Close this window and run START_APP.bat — it runs\n"
+            f"  npm install automatically on first run.\n"
+        )
+
+    env = os.environ.copy()
+    # Overrides the empty VITE_API_URL in .env.development.
+    # Vite's dotenv loader does NOT override an existing process env var,
+    # so this value is used as-is.
+    env["VITE_API_URL"] = f"http://localhost:{backend_port}"
+
+    return subprocess.Popen(
+        [node_exe, str(VITE_JS), "--port", str(frontend_port), "--host"],
+        cwd=str(FRONTEND_DIR),
+        env=env,
+        startupinfo=_hidden_si(),
+        creationflags=subprocess.CREATE_NO_WINDOW,
+    )
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Main
+# ──────────────────────────────────────────────────────────────────────────────
+
+def log(label: str, value: str = "") -> None:
+    if value:
+        print(f"  {label:<14} {value}")
+    else:
+        print(f"  {label}")
+
+
+def main() -> None:
+    print()
+    print(SEP)
+    print("  ZnO Supercapacitor AI Platform")
+    print(SEP)
+    print()
+
+    # ── STEP 1: Detect existing instance ──────────────────────────────────────
+    existing = check_existing()
+    if existing:
+        fp = existing["frontend_port"]
+        bp = existing["backend_port"]
+        print("  Already running -- reopening browser")
+        print()
+        log("Backend",  f"http://localhost:{bp}")
+        log("Frontend", f"http://localhost:{fp}")
+        print()
+        open_app_window(f"http://localhost:{fp}")
+        log("Browser", "Opened")
+        print()
+        return
+
+    # ── STEP 2 & 3: Find available ports ──────────────────────────────────────
+    log("Scanning ports ...")
+    backend_port  = find_free_port(BACKEND_PORT_START)
+    frontend_port = find_free_port(FRONTEND_PORT_START)
+    print()
+    log("Backend port",  str(backend_port))
+    log("Frontend port", str(frontend_port))
+    print()
+
+    # ── STEP 4: Launch backend ────────────────────────────────────────────────
+    log("Starting backend ...")
+    be_proc = launch_backend(backend_port, frontend_port)
+
+    # ── STEP 5 & 6: Launch frontend with dynamic API URL ─────────────────────
+    log("Starting frontend ...")
+    fe_proc = launch_frontend(frontend_port, backend_port)
+
+    # Write lock file immediately so a second double-click detects this instance
+    write_lock(backend_port, frontend_port, be_proc.pid, fe_proc.pid)
+    print()
+
+    # ── STEP 7a: Wait for frontend (fast — usually < 10 s) ───────────────────
+    log("Waiting for frontend ...")
+    fe_url = f"http://localhost:{frontend_port}"
+    fe_ok  = wait_for_url(fe_url + "/", FRONTEND_TIMEOUT, 1.5)
+    log("Frontend", "READY" if fe_ok else "TIMEOUT — check frontend window")
+
+    # ── STEP 8: Open browser as soon as frontend is up ────────────────────────
+    url = f"http://localhost:{frontend_port}"
+    open_app_window(url)
+    log("Browser", "Opened")
+    print()
+
+    # ── STEP 7b: Wait for backend (slow — RF model ~45 s) ────────────────────
+    log("Waiting for backend ML models (~45 s) ...")
+    be_url = f"http://localhost:{backend_port}/api/v1/health"
+    be_ok  = wait_for_url(be_url, BACKEND_TIMEOUT, 2.0)
+    log("Backend", "READY" if be_ok else "TIMEOUT — check backend window")
+
+    # ── STEP 9: Final summary ─────────────────────────────────────────────────
+    print()
+    print(SEP)
+    log("Backend",  f"http://localhost:{backend_port}")
+    log("Frontend", f"http://localhost:{frontend_port}")
+    log("API",      "READY" if be_ok else "STILL LOADING — page updates automatically")
+    log("Models",   "Loaded" if be_ok else "Loading ...")
+    log("Browser",  "Opened")
+    print(SEP)
+    print()
+
+
+if __name__ == "__main__":
+    main()

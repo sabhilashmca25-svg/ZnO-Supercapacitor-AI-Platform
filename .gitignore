@@ -87,8 +87,19 @@ data/processed/scalers.json
 # ── Node / Frontend ───────────────────────────────────────────────────────────
 frontend/node_modules/
 frontend/dist/
+frontend/dev-dist/
 frontend/.env.local
 frontend/.env.production
+frontend/tsconfig.node.tsbuildinfo
+frontend/tsconfig.tsbuildinfo
+frontend/vite.config.d.ts
+
+# ── Tool / Editor workspaces (local-only, not portable) ───────────────────────
+.serena/
+frontend/.claude/
+
+# ── Runtime lock / temp ───────────────────────────────────────────────────────
+.launcher.lock
 
 # ── OS ────────────────────────────────────────────────────────────────────────
 .DS_Store

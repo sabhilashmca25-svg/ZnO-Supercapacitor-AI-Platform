@@ -7,10 +7,8 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: "autoUpdate",
-      // Disable service worker in development — prevents stale cache from
-      // masking code changes. SW is only active in production builds.
-      devOptions: { enabled: false },
+      registerType: "prompt",
+      devOptions: { enabled: true, type: "module" },
       /* manifest.json is hand-crafted in public/ — no auto-generation needed */
       manifest: false,
       workbox: {
@@ -20,9 +18,6 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
         runtimeCaching: [
           {
-            // Match API calls regardless of which origin serves the backend.
-            // In dev: http://localhost:8000/api/v1/...
-            // In prod: https://your-api.onrender.com/api/v1/...
             urlPattern: /\/api\/v1\//,
             handler: "NetworkFirst",
             options: {

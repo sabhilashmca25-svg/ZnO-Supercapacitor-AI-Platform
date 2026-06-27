@@ -4,6 +4,7 @@ import { Skeleton } from "@mui/material";
 import { motion } from "framer-motion";
 import type { PredictionResponse, CompareResponse } from "../../types";
 import { MODEL_COLORS } from "../../constants/models";
+import { lineDrawVariants } from "../../animations/variants";
 
 // ── Shared dark Plotly layout ──────────────────────────────────────────────
 export const darkLayout = (title?: string): Partial<Plotly.Layout> => ({
@@ -197,8 +198,8 @@ export function buildMasterHoverTrace(
   experimentalData?: { potential_V: number[]; actual_current_uA: number[] } | null
 ): Plotly.Data {
   const pairedRev = pairReverse(fwdPot, revPot, revCurr);
-  const dIPred    = fwdCurr.map((f, i) => Math.abs(f - pairedRev[i]));
-  const SEP       = "────────────";
+  const dIPred = fwdCurr.map((f, i) => Math.abs(f - pairedRev[i]));
+  const SEP = "────────────";
 
   if (!experimentalData || experimentalData.potential_V.length === 0) {
     return {
@@ -220,10 +221,10 @@ export function buildMasterHoverTrace(
   }
 
   // With experimental overlay
-  const eS        = splitCVBranches(experimentalData.potential_V, experimentalData.actual_current_uA);
-  const expFwd    = pairToAxis(fwdPot, eS.fwdPot, eS.fwdCurr);
-  const expRev    = pairToAxis(fwdPot, eS.revPot, eS.revCurr);
-  const dIExp     = expFwd.map((f, i) => Math.abs(f - expRev[i]));
+  const eS = splitCVBranches(experimentalData.potential_V, experimentalData.actual_current_uA);
+  const expFwd = pairToAxis(fwdPot, eS.fwdPot, eS.fwdCurr);
+  const expRev = pairToAxis(fwdPot, eS.revPot, eS.revCurr);
+  const dIExp = expFwd.map((f, i) => Math.abs(f - expRev[i]));
 
   return {
     x: fwdPot,
@@ -275,7 +276,7 @@ export function SingleCVPlot({
   loading = false,
 }: SingleCVPlotProps) {
   const modelName = result.model_name ?? (result as any).model ?? "unknown";
-  const color     = MODEL_COLORS[modelName] ?? "#00d4ff";
+  const color = MODEL_COLORS[modelName] ?? "#00d4ff";
   const { potential_V, predicted_current_uA } = result;
 
   // ── Traces ───────────────────────────────────────────────────────────────
@@ -287,9 +288,9 @@ export function SingleCVPlot({
 
     // 1. ±RMSE prediction error band (polygon, no hover)
     if (showConfidenceBand && rmseUa > 0 && potential_V.length > 0) {
-      const upper    = predicted_current_uA.map(v => v + rmseUa);
-      const lower    = predicted_current_uA.map(v => v - rmseUa);
-      const rev_pot  = [...potential_V].reverse();
+      const upper = predicted_current_uA.map(v => v + rmseUa);
+      const lower = predicted_current_uA.map(v => v - rmseUa);
+      const rev_pot = [...potential_V].reverse();
       const rev_lower = [...lower].reverse();
       list.push({
         x: [...potential_V, ...rev_pot] as number[],
@@ -379,7 +380,7 @@ export function SingleCVPlot({
   const annotations = useMemo<Partial<Plotly.Annotations>[]>(() => {
     if (!showPeakAnnotations || potential_V.length === 0) return [];
 
-    const iAnodic   = peakIdx(predicted_current_uA, "max");
+    const iAnodic = peakIdx(predicted_current_uA, "max");
     const iCathodic = peakIdx(predicted_current_uA, "min");
     const Ia = predicted_current_uA[iAnodic];
     const Ic = predicted_current_uA[iCathodic];
@@ -432,9 +433,10 @@ export function SingleCVPlot({
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.4 }}
+      key={`${modelName}_${result.material_id}_${result.scan_rate_mVs}`}
+      variants={lineDrawVariants}
+      initial="initial"
+      animate="animate"
       style={{ width: "100%", height }}
     >
       <Plot
@@ -466,35 +468,54 @@ export function MultiCVPlot({ result, height = 480 }: MultiCVPlotProps) {
       const color = MODEL_COLORS[modelId] ?? "#94a3b8";
       const { fwdPot, fwdCurr, revPot, revCurr } =
         splitCVBranches(result.potential_V, pred.predicted_current_uA);
+
+      // Forward hover: pair each fwd voltage → nearest reverse current
       const pairedRev = pairReverse(fwdPot, revPot, revCurr);
       const fwdCD = fwdCurr.map((f, i) => [pairedRev[i], Math.abs(f - pairedRev[i])]);
-      const SEP   = "────────────";
+
+      // Reverse hover: pair each rev voltage → nearest forward current
+      const pairedFwd = pairToAxis(revPot, fwdPot, fwdCurr);
+      const revCD = revCurr.map((r, i) => [pairedFwd[i], Math.abs(r - pairedFwd[i])]);
+
+      const SEP = "────────────";
+      const group = modelId.toUpperCase();
 
       return [
-        // Forward: compact dual-branch tooltip (3 lines + voltage header)
+        // Forward: visual + hover. legendgroup links it to the reverse trace so
+        // one legend click toggles the complete CV loop (both branches).
         {
           x: fwdPot, y: fwdCurr,
           type: "scatter" as const, mode: "lines" as const,
-          name: modelId.toUpperCase(),
+          name: group,
+          legendgroup: group,
           line: { color, width: 2, shape: "spline" as const, smoothing: 0.5 },
           customdata: fwdCD,
           hovertemplate:
             `<b>%{x:.3f} V</b><br>${SEP}<br>` +
-            `<b>${modelId.toUpperCase()}</b><br>` +
-            `↑ Fwd : <b>%{y:+.1f}</b> µA<br>` +
-            `↓ Rev : <b>%{customdata[0]:+.1f}</b> µA<br>` +
+            `<b>${group}</b><br>` +
+            `↑ Fwd (Oxidation) : <b>%{y:+.1f}</b> µA<br>` +
+            `↓ Rev (Reduction) : <b>%{customdata[0]:+.1f}</b> µA<br>` +
             `ΔI     : <b>%{customdata[1]:.1f}</b> µA` +
             `<extra></extra>`,
-          showlegend: false,
+          showlegend: true,
         },
-        // Reverse: visual only
+        // Reverse: visual + hover. showlegend:false avoids a duplicate legend
+        // entry; legendgroup keeps it coupled to the forward trace for toggling.
         {
           x: revPot, y: revCurr,
           type: "scatter" as const, mode: "lines" as const,
-          name: modelId.toUpperCase(),
+          name: group,
+          legendgroup: group,
           line: { color, width: 2, shape: "spline" as const, smoothing: 0.5 },
-          hoverinfo: "skip" as const,
-          showlegend: true,
+          customdata: revCD,
+          hovertemplate:
+            `<b>%{x:.3f} V</b><br>${SEP}<br>` +
+            `<b>${group}</b><br>` +
+            `↓ Rev (Reduction) : <b>%{y:+.1f}</b> µA<br>` +
+            `↑ Fwd (Oxidation) : <b>%{customdata[0]:+.1f}</b> µA<br>` +
+            `ΔI     : <b>%{customdata[1]:.1f}</b> µA` +
+            `<extra></extra>`,
+          showlegend: false,
         },
       ];
     });
@@ -507,9 +528,10 @@ export function MultiCVPlot({ result, height = 480 }: MultiCVPlotProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.4 }}
+      key={`${result.material_id}_${result.scan_rate_mVs}`}
+      variants={lineDrawVariants}
+      initial="initial"
+      animate="animate"
       style={{ width: "100%", height }}
     >
       <Plot

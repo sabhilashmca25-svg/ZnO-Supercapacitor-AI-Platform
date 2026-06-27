@@ -20,7 +20,7 @@ import LoadingOverlay from "../components/common/LoadingOverlay";
 import ModelBadge from "../components/common/ModelBadge";
 import { MODELS, MATERIALS, MODEL_COLORS } from "../constants/models";
 import { fmtUa, fmtMB, rmseColor, r2Color } from "../utils/formatters";
-import { cardVariants, staggerContainer } from "../animations/variants";
+import { cardVariants, staggerContainer, heatmapFadeVariants } from "../animations/variants";
 
 const SCAN_RATE_MARKS = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map((v) => ({
   value: v,
@@ -59,6 +59,17 @@ function cosSim(a: number[], b: number[]): number {
     normB += b[i] * b[i];
   }
   return normA > 0 && normB > 0 ? dot / (Math.sqrt(normA) * Math.sqrt(normB)) : 0;
+}
+
+/** Qualitative interpretation label shown in the similarity matrix tooltip. */
+function simLabel(a: string, b: string, sim: number): string {
+  if (a === b)   return "Self-Comparison";
+  if (sim >= 0.995) return "Nearly Identical";
+  if (sim >= 0.980) return "Extremely High Agreement";
+  if (sim >= 0.960) return "Very High Agreement";
+  if (sim >= 0.940) return "High Agreement";
+  if (sim >= 0.900) return "Moderate Agreement";
+  return "Low Agreement";
 }
 
 type ViewMode = "overlay" | "residual" | "similarity";
@@ -112,14 +123,31 @@ export default function ModelComparison() {
   /** Pairwise cosine similarity matrix */
   const similarityMatrix = useMemo(() => {
     if (!compareResult) return null;
-    const modelIds = Object.keys(compareResult.predictions);
+    // Respect the order models were selected in the left panel (Phase 4).
+    // Models present in the result but absent from selectedModels fall to the end.
+    const rawIds = Object.keys(compareResult.predictions);
+    const modelIds = [...rawIds].sort((a, b) => {
+      const ia = selectedModels.indexOf(a);
+      const ib = selectedModels.indexOf(b);
+      return (ia === -1 ? rawIds.length : ia) - (ib === -1 ? rawIds.length : ib);
+    });
     const currs = modelIds.map((m) => compareResult.predictions[m].predicted_current_uA);
     const n = modelIds.length;
+    // ── Computation unchanged ──────────────────────────────────────────────
     const matrix: number[][] = Array.from({ length: n }, (_, i) =>
       Array.from({ length: n }, (_, j) => cosSim(currs[i], currs[j]))
     );
-    return { modelIds, matrix };
-  }, [compareResult]);
+    // Precompute interpretation labels for every cell (used in hover tooltip).
+    const labels: string[][] = Array.from({ length: n }, (_, i) =>
+      Array.from({ length: n }, (_, j) => simLabel(modelIds[i], modelIds[j], matrix[i][j]))
+    );
+    // Minimum off-diagonal value drives the dynamic colour scale.
+    let minSim = 1;
+    for (let i = 0; i < n; i++)
+      for (let j = 0; j < n; j++)
+        if (i !== j) minSim = Math.min(minSim, matrix[i][j]);
+    return { modelIds, matrix, labels, minSim };
+  }, [compareResult, selectedModels]);
 
   /** Deploy scores lookup from MODELS config */
   const deployScoreMap = useMemo(
@@ -624,13 +652,47 @@ export default function ModelComparison() {
                             sx={{ color: "rgba(255,255,255,0.3)", fontSize: "0.65rem", display: "block", mb: 1.5 }}>
                             1.0000 = identical curves · Values near 0.99+ indicate highly correlated model outputs across 651 potential points.
                           </Typography>
-                          {similarityMatrix ? (
+                          {similarityMatrix ? (() => {
+                            // ── Colour range ───────────────────────────────────────────────
+                            // Floor minSim to the nearest 0.02 boundary then step back one
+                            // unit so the full palette spans only the real data variation.
+                            const zmin = Math.max(
+                              0.80,
+                              Math.floor(similarityMatrix.minSim * 50) / 50 - 0.02
+                            );
+                            // Five evenly-spaced ticks rounded to 2 decimal places.
+                            const tickvals = [0, 1, 2, 3, 4].map((k) =>
+                              parseFloat((zmin + k * (1 - zmin) / 4).toFixed(2))
+                            );
+                            tickvals[4] = 1.00;
+
+                            // ── Diagonal emphasis: subtle white border per self-comparison cell
+                            const diagShapes = similarityMatrix.modelIds.map((_, i) => ({
+                              type: "rect" as const,
+                              xref: "x" as const,
+                              yref: "y" as const,
+                              x0: i - 0.46, x1: i + 0.46,
+                              y0: i - 0.46, y1: i + 0.46,
+                              line: { color: "rgba(255,255,255,0.55)", width: 2 },
+                              fillcolor: "rgba(0,0,0,0)",
+                              layer: "above" as const,
+                            } as Plotly.Shape));
+
+                            return (
+                            <motion.div
+                              key={similarityMatrix.modelIds.join()}
+                              variants={heatmapFadeVariants}
+                              initial="initial"
+                              animate="animate"
+                            >
                             <Plot
                               data={[{
                                 type: "heatmap" as const,
                                 z: similarityMatrix.matrix,
                                 x: similarityMatrix.modelIds.map((m) => m.toUpperCase()),
                                 y: similarityMatrix.modelIds.map((m) => m.toUpperCase()),
+                                // Precomputed interpretation labels — one per cell
+                                customdata: similarityMatrix.labels as unknown as Plotly.Datum[][],
                                 colorscale: [
                                   [0,    "#1e1b4b"],
                                   [0.4,  "#312e81"],
@@ -639,35 +701,55 @@ export default function ModelComparison() {
                                   [0.96, "#a78bfa"],
                                   [1,    "#ede9fe"],
                                 ],
-                                zmin: 0.8,
+                                zmin,
                                 zmax: 1.0,
+                                // Subtle gap between cells improves readability
+                                xgap: 2,
+                                ygap: 2,
                                 texttemplate: "%{z:.4f}",
                                 textfont: { size: 13, color: "#f1f5f9", family: "JetBrains Mono" },
-                                hovertemplate: "<b>%{y} vs %{x}</b><br>Cosine Similarity: %{z:.4f}<extra></extra>",
+                                // Compact tooltip: model pair → value → interpretation
+                                hovertemplate:
+                                  "<b>%{y} ↔ %{x}</b><br>" +
+                                  "Similarity  <b>%{z:.4f}</b><br>" +
+                                  "<i>%{customdata}</i>" +
+                                  "<extra></extra>",
                                 showscale: true,
                                 colorbar: {
                                   thickness: 12, len: 0.85,
                                   title: { text: "Sim.", font: { size: 10, color: "#94a3b8" } },
                                   tickfont: { size: 9, family: "JetBrains Mono", color: "#94a3b8" },
-                                  tickvals: [0.80, 0.85, 0.90, 0.95, 1.00],
+                                  tickvals,
+                                  tickformat: ".2f",
                                 },
                               }]}
                               layout={DarkLayout({
                                 height: 440,
-                                margin: { l: 80, r: 80, t: 20, b: 60 },
+                                margin: { l: 90, r: 90, t: 20, b: 70 },
                                 xaxis: {
                                   tickfont: { size: 12, color: "#e2e8f0", family: "JetBrains Mono" },
                                   side: "bottom" as const,
                                 },
                                 yaxis: {
                                   tickfont: { size: 12, color: "#e2e8f0", family: "JetBrains Mono" },
+                                  autorange: "reversed" as const,
+                                },
+                                shapes: diagShapes,
+                                // Compact hoverlabel — small width, stays close to cursor
+                                hoverlabel: {
+                                  bgcolor: "rgba(10,16,32,0.96)",
+                                  bordercolor: "#a78bfa",
+                                  font: { size: 11, color: "#f1f5f9", family: "JetBrains Mono" },
+                                  align: "left" as const,
+                                  namelength: 0,
                                 },
                               })}
                               config={PlotConfig}
                               style={{ width: "100%", height: 440 }}
                               useResizeHandler
                             />
-                          ) : (
+                            </motion.div>
+                          );})() : (
                             <Box sx={{ height: 440, display: "flex", alignItems: "center", justifyContent: "center" }}>
                               <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.35)" }}>
                                 Run comparison to compute cosine similarity matrix.
@@ -1005,7 +1087,11 @@ export default function ModelComparison() {
             <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.25)", fontSize: "0.65rem", fontWeight: 600, display: "block", mb: 1 }}>
               Radar Axis Definitions
             </Typography>
-            <Grid container spacing={1.5}>
+            <Box sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "repeat(5, 1fr)" },
+              gap: 1.5,
+            }}>
               {[
                 { axis: "Accuracy", desc: "Score from val RMSE — RF/LightGBM ~98, ANN ~55", color: "#10b981" },
                 { axis: "NM4 R²", desc: "Test-MAT R² normalised to 0.90–1.00 range", color: "#a78bfa" },
@@ -1013,17 +1099,15 @@ export default function ModelComparison() {
                 { axis: "Size Eff.", desc: "Inverse log-normalised model size (smaller file = higher score)", color: "#f59e0b" },
                 { axis: "SR Interp.", desc: "Score from test-SR RMSE (scan rate interpolation at SR=50)", color: "#f472b6" },
               ].map((item) => (
-                <Grid item xs={12} sm={6} md={4} lg="auto" key={item.axis} sx={{ flex: "1 1 200px" }}>
-                  <Box sx={{ display: "flex", alignItems: "flex-start", gap: 0.75 }}>
-                    <Box sx={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: item.color, mt: 0.5, flexShrink: 0 }} />
-                    <Box>
-                      <Typography variant="caption" sx={{ color: item.color, fontWeight: 700, fontSize: "0.65rem" }}>{item.axis}:</Typography>
-                      <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.3)", fontSize: "0.62rem", display: "block" }}>{item.desc}</Typography>
-                    </Box>
+                <Box key={item.axis} sx={{ display: "flex", alignItems: "flex-start", gap: 0.75 }}>
+                  <Box sx={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: item.color, mt: 0.5, flexShrink: 0 }} />
+                  <Box>
+                    <Typography variant="caption" sx={{ color: item.color, fontWeight: 700, fontSize: "0.65rem" }}>{item.axis}:</Typography>
+                    <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.3)", fontSize: "0.62rem", display: "block" }}>{item.desc}</Typography>
                   </Box>
-                </Grid>
+                </Box>
               ))}
-            </Grid>
+            </Box>
           </Box>
         </Box>
       )}

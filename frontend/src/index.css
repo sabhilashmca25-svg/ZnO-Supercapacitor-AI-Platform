@@ -1,6 +1,12 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap");
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 :root {
   --bg: #070b14;
@@ -32,14 +38,33 @@ html, body, #root {
 
 .mono { font-family: "JetBrains Mono", "Fira Code", monospace; }
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
-::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.25); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(0,212,255,0.45); }
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
 
-::selection { background: rgba(0,212,255,0.25); color: #f1f5f9; }
+::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.3);
+}
 
-:focus-visible { outline: 2px solid rgba(0,212,255,0.7); outline-offset: 2px; }
+::-webkit-scrollbar-thumb {
+  background: rgba(0,212,255,0.25);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,212,255,0.45);
+}
+
+::selection {
+  background: rgba(0,212,255,0.25);
+  color: #f1f5f9;
+}
+
+:focus-visible {
+  outline: 2px solid rgba(0,212,255,0.7);
+  outline-offset: 2px;
+}
 
 /* Plotly transparent overrides */
 .js-plotly-plot, .js-plotly-plot .plot-container, .plotly-graph-div {

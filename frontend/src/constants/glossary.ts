@@ -24,7 +24,7 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
   anodic: {
     term: "Anodic (Oxidation)",
     short: "The forward sweep where the electrode potential increases. Anodic current is positive — electrons flow from electrode to electrolyte (oxidation).",
-    extended: "In an anodic sweep, cations (e.g. K⁺) adsorb onto the electrode surface and electrons are extracted. The anodic peak current (I_a) marks the maximum oxidation rate.",
+    extended: "In an anodic sweep, cations (e.g. Na⁺ from Na₂SO₄ electrolyte) adsorb onto the electrode surface and electrons are extracted. The anodic peak current (I_a) marks the maximum oxidation rate.",
   },
   cathodic: {
     term: "Cathodic (Reduction)",
@@ -49,7 +49,7 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
   capacitance: {
     term: "Specific Capacitance",
     short: "Charge stored per unit electrode area (mF/cm²) or mass (F/g). Derived from CV as C = ∫I dV / (2·ν·ΔV).",
-    extended: "Higher capacitance = more energy stored at the same voltage. ZnO composites with rGO or transition metal oxides (MnO₂, Co₃O₄) enhance capacitance through added surface area and pseudocapacitance.",
+    extended: "Higher capacitance = more energy stored at the same voltage. The experimental ZnO-based electrode materials in this study show varying capacitance levels, influenced by their specific surface area and any pseudocapacitive contributions.",
   },
   charge_storage_index: {
     term: "Charge Storage Index (CSI)",
@@ -68,7 +68,7 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
   },
   zero_shot: {
     term: "Zero-Shot Extrapolation",
-    short: "Predicting behaviour of NM4 (ZnO/Co₃O₄) without any NM4 training examples — purely from patterns learned on NM1–NM3.",
+    short: "Predicting behaviour of NM4 without any NM4 training examples — purely from patterns learned on NM1–NM3.",
     extended: "Zero-shot is the hardest generalisation test. GRU achieves R² = 0.9751 on NM4 despite never seeing it — demonstrating that recurrent models learn CV topology from the sweep sequence rather than material-specific fingerprints.",
   },
   integral_area: {
@@ -83,7 +83,7 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
   },
   nanocomposite: {
     term: "ZnO Nanocomposite",
-    short: "Zinc oxide nanostructure combined with a secondary material (rGO, MnO₂, Co₃O₄) to enhance electrochemical performance through synergistic effects.",
-    extended: "NM1 = ZnO nanorods (baseline). NM2 = ZnO/rGO (graphene increases surface area). NM3 = ZnO/MnO₂ (adds pseudocapacitance). NM4 = ZnO/Co₃O₄ (Co redox enhances capacity).",
+    short: "One of the four experimental ZnO-based electrode material groups (NM1–NM4) used in this study. Each group exhibits a distinct cyclic voltammetry profile.",
+    extended: "NM1 is the ZnO baseline electrode. NM2, NM3, and NM4 are additional experimental material groups with distinct CV profiles. Their specific chemical compositions are not defined in the source dataset — they are identified only by their dataset labels (NM2, NM3, NM4).",
   },
 };

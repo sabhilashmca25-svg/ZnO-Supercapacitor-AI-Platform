@@ -4,6 +4,7 @@ import { Box } from "@mui/material";
 import Sidebar, { SIDEBAR_WIDTH } from "./Sidebar";
 import TopBar from "./TopBar";
 import OfflineBanner from "../common/OfflineBanner";
+import UpdateDialog from "../pwa/UpdateDialog";
 
 export default function AppShell() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -50,6 +51,8 @@ export default function AppShell() {
       </Box>
       {/* Global offline indicator — shown whenever network is unavailable */}
       <OfflineBanner />
+      {/* PWA update prompt — shown when a new service worker is waiting */}
+      <UpdateDialog />
     </Box>
   );
 }

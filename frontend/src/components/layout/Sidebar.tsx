@@ -31,14 +31,14 @@ import { useHealth } from "../../hooks/useHealth";
 export const SIDEBAR_WIDTH = 256;
 
 const NAV = [
-  { label: "Dashboard",          path: ROUTES.DASHBOARD,          icon: <DashboardRounded />,      section: "main" },
-  { label: "Prediction Studio",  path: ROUTES.PREDICTION_STUDIO,  icon: <ScienceRounded />,        section: "main", highlight: true },
-  { label: "Model Comparison",   path: ROUTES.MODEL_COMPARISON,   icon: <CompareArrowsRounded />,  section: "main" },
-  { label: "Research Analytics", path: ROUTES.RESEARCH_ANALYTICS, icon: <BarChartRounded />,       section: "research" },
-  { label: "Validation Analysis",path: ROUTES.VALIDATION,         icon: <VerifiedRounded />,       section: "research", highlight: true },
-  { label: "Benchmarks",         path: ROUTES.BENCHMARKS,         icon: <LeaderboardRounded />,    section: "research" },
-  { label: "Model Encyclopedia", path: ROUTES.MODEL_ENCYCLOPEDIA, icon: <AutoAwesomeRounded />,    section: "research" },
-  { label: "About Research",     path: ROUTES.ABOUT,              icon: <InfoRounded />,           section: "info" },
+  { label: "Dashboard", path: ROUTES.DASHBOARD, icon: <DashboardRounded />, section: "main" },
+  { label: "Prediction Studio", path: ROUTES.PREDICTION_STUDIO, icon: <ScienceRounded />, section: "main", highlight: true },
+  { label: "Model Comparison", path: ROUTES.MODEL_COMPARISON, icon: <CompareArrowsRounded />, section: "main" },
+  { label: "Research Analytics", path: ROUTES.RESEARCH_ANALYTICS, icon: <BarChartRounded />, section: "research" },
+  { label: "Validation Analysis", path: ROUTES.VALIDATION, icon: <VerifiedRounded />, section: "research", highlight: true },
+  { label: "Benchmarks", path: ROUTES.BENCHMARKS, icon: <LeaderboardRounded />, section: "research" },
+  { label: "Model Encyclopedia", path: ROUTES.MODEL_ENCYCLOPEDIA, icon: <AutoAwesomeRounded />, section: "research" },
+  { label: "About Research", path: ROUTES.ABOUT, icon: <InfoRounded />, section: "info" },
 ];
 
 interface SidebarProps {
@@ -54,9 +54,9 @@ export default function Sidebar({ width = SIDEBAR_WIDTH, mobileOpen = false, onC
   const { pathname } = useLocation();
   const { health } = useHealth(60_000);
 
-  const mainNav     = NAV.filter((n) => n.section === "main");
+  const mainNav = NAV.filter((n) => n.section === "main");
   const researchNav = NAV.filter((n) => n.section === "research");
-  const infoNav     = NAV.filter((n) => n.section === "info");
+  const infoNav = NAV.filter((n) => n.section === "info");
 
   const isOnline = health?.status === "ok";
 
@@ -109,11 +109,11 @@ export default function Sidebar({ width = SIDEBAR_WIDTH, mobileOpen = false, onC
 
       {/* Nav sections */}
       <Box sx={{ flex: 1, overflow: "auto", py: 1 }}>
-        <NavSection items={mainNav}     pathname={pathname} navigate={handleNavigate} />
+        <NavSection items={mainNav} pathname={pathname} navigate={handleNavigate} />
         <SectionLabel label="Research" />
         <NavSection items={researchNav} pathname={pathname} navigate={handleNavigate} />
         <SectionLabel label="Info" />
-        <NavSection items={infoNav}     pathname={pathname} navigate={handleNavigate} />
+        <NavSection items={infoNav} pathname={pathname} navigate={handleNavigate} />
       </Box>
 
       {/* Footer: API status */}

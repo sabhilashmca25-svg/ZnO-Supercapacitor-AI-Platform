@@ -1,10 +1,10 @@
-# ── Line endings ──────────────────────────────────────────────────────────────
+# â”€â”€ Line endings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Enforce LF line endings for all text files on all platforms.
 * text=auto eol=lf
 # Windows batch files must use CRLF
 *.bat text eol=crlf
 
-# ── Binary files — diff disabled ──────────────────────────────────────────────
+# â”€â”€ Binary files â€” diff disabled â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # These are binary formats; git stores them as blobs, no text diff needed.
 *.joblib binary
 *.keras  binary
@@ -17,7 +17,7 @@
 
 # NOTE: Git LFS is NOT configured here.
 # All model files committed to this repo are < 2 MB and are tracked normally.
-# The RF model (211 MB) is gitignored entirely — see .gitignore.
+# The RF model (211 MB) is gitignored entirely â€” see .gitignore.
 # If you need to add RF to git in the future, use:
 #   git lfs track "models/rf/*.joblib"
 # and update .gitignore to un-ignore models/rf/*.joblib.

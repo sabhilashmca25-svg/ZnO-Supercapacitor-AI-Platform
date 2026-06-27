@@ -1,7 +1,6 @@
 import React from "react";
-import { Box, Typography, Divider } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { motion } from "framer-motion";
-import { fadeUp } from "../../animations/variants";
 
 interface SectionHeaderProps {
   title: string;
