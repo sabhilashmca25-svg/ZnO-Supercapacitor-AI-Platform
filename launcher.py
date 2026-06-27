@@ -288,6 +288,26 @@ def launch_frontend(frontend_port: int, backend_port: int) -> subprocess.Popen:
 # Main
 # ──────────────────────────────────────────────────────────────────────────────
 
+def _adopt_orphan() -> dict | None:
+    """
+    Detect an orphaned instance — backend + frontend running on the default
+    ports but with no lock file (happens when the user closes the terminal
+    instead of using STOP_APP, or when stop_app cleans the lock but the
+    processes survive).
+
+    Checks the default backend port for a valid /api/v1/health response and
+    the default frontend port for any HTTP 200.  If both are up, returns a
+    synthetic lock dict so the caller can reuse the existing instance instead
+    of spawning a duplicate on port 8001 / 5174.
+    """
+    b_port = BACKEND_PORT_START
+    f_port = FRONTEND_PORT_START
+    if http_ok(f"http://localhost:{b_port}/api/v1/health") and http_ok(f"http://localhost:{f_port}/"):
+        return {"backend_port": b_port, "frontend_port": f_port,
+                "backend_pid": 0, "frontend_pid": 0}
+    return None
+
+
 def log(label: str, value: str = "") -> None:
     if value:
         ok = value.startswith("READY") or value.startswith("Opened") or value.startswith("Loaded")
@@ -307,6 +327,14 @@ def main() -> None:
 
     # ── STEP 1: Detect existing instance ──────────────────────────────────────
     existing = check_existing()
+
+    # ── STEP 1b: Detect orphaned instance (running but no lock file) ──────────
+    # When STOP_APP is skipped the processes keep running but the lock file is
+    # gone.  Without this check every START_APP click spawns a new instance on
+    # a higher port (8001, 8002 …) while the original keeps running.
+    if not existing:
+        existing = _adopt_orphan()
+
     if existing:
         fp = existing["frontend_port"]
         bp = existing["backend_port"]
