@@ -27,6 +27,7 @@ SWAGGER UI (interactive docs):
     http://localhost:8000/docs   (disabled in production when DOCS_ENABLED=False)
 """
 import logging
+import threading
 import time
 from contextlib import asynccontextmanager
 
@@ -38,7 +39,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.api.v1.router import api_router
 from app.core.config import settings
-from app.core.model_registry import model_registry, HOT_MODELS
+from app.core.model_registry import model_registry, HOT_MODELS, LAZY_MODELS
 from app.core.exceptions import (
     ModelNotFoundError,
     ModelNotLoadedError,
@@ -141,6 +142,16 @@ async def lifespan(app: FastAPI):
 
     if settings.ENABLE_WARMUP:
         _run_warmup()
+
+    # Pre-load all lazy (Tier-2) models in the background so all 6 are
+    # available immediately without waiting for the first user request.
+    lazy_to_load = [m for m in settings.ENABLED_MODELS if m in LAZY_MODELS]
+    if lazy_to_load:
+        def _preload_lazy():
+            for mid in lazy_to_load:
+                model_registry.ensure_loaded(mid)
+            logger.info("Background pre-load complete: %s", model_registry.loaded_models())
+        threading.Thread(target=_preload_lazy, daemon=True, name="lazy-preload").start()
 
     logger.info("Swagger docs  → http://localhost:%s/docs", settings.API_PORT)
     logger.info("Ready probe   → http://localhost:%s/api/v1/health/ready", settings.API_PORT)
