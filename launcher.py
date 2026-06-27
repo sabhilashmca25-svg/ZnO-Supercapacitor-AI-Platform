@@ -177,16 +177,28 @@ def check_existing() -> dict | None:
     """
     Return lock data if this project is already running.
     Removes a stale lock file when the processes have died.
+
+    Two-stage check:
+      1. Both PIDs must be alive (fast, OS-level check).
+      2. Backend port must actually respond to HTTP (guards against PID reuse
+         where an unrelated process happens to have the same PID as a previous
+         backend, causing a false-positive "already running" detection).
     """
     data = read_lock()
     if data is None:
         return None
 
-    b_pid = data.get("backend_pid")
-    f_pid = data.get("frontend_pid")
+    b_pid  = data.get("backend_pid")
+    f_pid  = data.get("frontend_pid")
+    b_port = data.get("backend_port", BACKEND_PORT_START)
 
     if b_pid and f_pid and is_pid_alive(b_pid) and is_pid_alive(f_pid):
-        return data
+        # Verify the backend port is actually ours, not a reused PID
+        if http_ok(f"http://localhost:{b_port}/api/v1/health"):
+            return data
+        # PIDs alive but backend not responding — stale lock
+        clear_lock()
+        return None
 
     clear_lock()
     return None
