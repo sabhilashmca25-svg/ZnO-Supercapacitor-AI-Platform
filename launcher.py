@@ -342,7 +342,7 @@ def main() -> None:
     print()
 
     # ── STEP 7b: Wait for backend (slow — RF model ~45 s) ────────────────────
-    log("Waiting for backend ML models (up to 60 s) ...")
+    log("Waiting for backend ML models (up to 120 s) ...")
     be_url = f"http://localhost:{backend_port}/api/v1/health"
     be_ok  = wait_for_url(be_url, BACKEND_TIMEOUT, 2.0)
     log("Backend", "READY" if be_ok else "TIMEOUT — check backend window")

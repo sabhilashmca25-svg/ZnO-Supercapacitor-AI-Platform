@@ -22,7 +22,6 @@ SUPPORTED LOADERS:
 import json
 import logging
 import threading
-from pathlib import Path
 
 from app.core.config import settings, PLATFORM_ROOT
 

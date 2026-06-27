@@ -1,99 +1,120 @@
 # ZnO Supercapacitor AI Platform
 
-> **AI-Based Mobile Application for Predicting Supercapacitor Performance
+> **AI-Based Research Platform for Predicting Supercapacitor Performance
 > Using Machine Learning**
 >
 > MCA 2nd Semester PBL Project — Full-Stack Research Platform
 
 ---
 
-## Live Platform
-| Service | URL |
-|---------|-----|
-| Frontend (PWA) | _https://zno-supercapacitor-ai.vercel.app_ |
-| Backend API    | _https://zno-supercapacitor-api.onrender.com_ |
-| API Docs (Swagger) | _https://zno-supercapacitor-api.onrender.com/docs_ |
-
----
-
 ## What This Platform Does
 
-Users can:
-- **Predict** full CV current–voltage trajectories for ZnO supercapacitors
-- **Compare** predictions from 6 ML models side-by-side
-- **Explore** publication-quality benchmarking figures
-- **Analyse** interpolation vs extrapolation performance
-- **Study** model architectures, parameters, and trade-offs
+- **Predict** full CV current–voltage trajectories for ZnO supercapacitors using 6 ML models
+- **Compare** model predictions side-by-side with publication-quality Plotly charts
+- **Explore** benchmark leaderboards, RMSE/R² metrics, and training histories
+- **Validate** predictions against real experimental data with residual analysis
+- **Run offline** — Progressive Web App with service worker caching
 
 ---
 
 ## Model Performance Summary
 
-| Model | Val RMSE | TestMAT R² | Size | Deploy |
-|-------|----------|-----------|------|--------|
-| Random Forest | 26.59 µA | 0.9707 | 615 MB | Lab only |
-| XGBoost | 28.83 µA | 0.9668 | 0.3 MB | ✅ |
+| Model | Val RMSE | TestMAT R² | Size | Notes |
+|-------|----------|------------|------|-------|
+| Random Forest | 26.59 µA | 0.9707 | 201 MB | Via Git LFS |
 | LightGBM | 26.86 µA | 0.9678 | 1.7 MB | ✅ Recommended |
-| ANN | 49.93 µA | 0.9606 | 0.2 MB | ✅ |
-| LSTM | 36.51 µA | 0.9674 | 0.4 MB | ✅ |
+| XGBoost | 28.83 µA | 0.9668 | 0.3 MB | ✅ |
 | GRU | 36.84 µA | 0.9751 | 0.3 MB | ✅ Best extrapolation |
-
----
-
-## Project Structure
-
-```
-ZnO_Supercapacitor_AI_Platform/
-├── backend/        FastAPI Python API (6 model endpoints)
-├── frontend/       React + MUI + Plotly PWA (8 pages)
-├── models/         Trained model files + metadata
-├── research/       Metrics, exports, training histories (ML phase)
-├── data/           Processed parquet datasets + scalers
-├── src/            Notebook builder scripts
-└── docs/           Technical documentation
-```
+| LSTM | 36.51 µA | 0.9674 | 0.4 MB | ✅ |
+| ANN | 49.93 µA | 0.9606 | 0.2 MB | ✅ |
 
 ---
 
 ## System Requirements
 
-| Tool | Minimum version |
-|------|----------------|
-| Python | 3.11 |
-| Node.js | 18 |
-| Git | Any recent version |
-| OS | Windows 10 / macOS 12 / Ubuntu 20.04 |
+| Tool | Minimum | Notes |
+|------|---------|-------|
+| Python | 3.11 | 3.13 supported; TF 2.18+ required |
+| Node.js | 18 LTS | 20 LTS recommended |
+| Git | 2.38+ | With **Git LFS** extension |
+| Git LFS | 3.0+ | Required to download RF model |
+| RAM | 8 GB | 16 GB recommended (RF loads ~4 GB) |
+| OS | Windows 10 / macOS 12 / Ubuntu 20.04 | |
 
-> TensorFlow (required for GRU / LSTM / ANN) supports Python 3.11–3.13.
+> **Git LFS is required.** The Random Forest model (201 MB) is stored via Git Large File Storage.
+> Run `git lfs install` once per machine **before** cloning.
 
 ---
 
-## Quick Start
+## Quick Start (Windows — Recommended)
 
-### Backend
+```
+1. Install Git LFS (one-time, per machine):
+   https://git-lfs.com
+
+2. Clone the repository (LFS downloads RF model automatically):
+   git lfs install
+   git clone <repository-url>
+   cd ZnO_Supercapacitor_AI_Platform
+
+3. Double-click START_APP.bat
+   - Creates Python virtual environment automatically
+   - Installs all Python packages (TensorFlow ~350 MB, first run only)
+   - Installs all Node.js packages (first run only)
+   - Starts backend + frontend
+   - Opens browser at http://localhost:5173
+```
+
+**To stop:** double-click `STOP_APP.bat`
+
+---
+
+## Quick Start (macOS / Linux)
+
+```bash
+# Install Git LFS (one-time)
+brew install git-lfs          # macOS
+sudo apt install git-lfs      # Ubuntu/Debian
+
+# Clone (LFS downloads RF model automatically)
+git lfs install
+git clone <repository-url>
+cd ZnO_Supercapacitor_AI_Platform
+
+# Launch
+bash start_app.sh
+```
+
+**To stop:** press `Ctrl+C` in the terminal, or run `bash stop_app.sh`
+
+---
+
+## Manual Setup (Backend)
+
 ```bash
 cd backend
 
 # Create and activate virtual environment
 python -m venv venv
-venv\Scripts\activate        # Windows
-# source venv/bin/activate   # macOS / Linux
+venv\Scripts\activate          # Windows
+# source venv/bin/activate    # macOS / Linux
 
 pip install -r requirements.txt
 
-# (Optional) copy .env.example to .env to customise settings
-# cp .env.example .env
+# Optional: copy .env.example to .env to customise
+cp .env.example .env
 
 uvicorn app.main:app --host 0.0.0.0 --port 8000
-# Swagger UI: http://localhost:8000/docs
-# Health API: http://localhost:8000/api/v1/health
 ```
 
-> First startup loads all ML models — allow ~30–60 s before the API badge turns green.
+- Swagger UI: http://localhost:8000/docs
+- Health check: http://localhost:8000/api/v1/health
+- First startup loads all ML models — allow ~30–60 s (RF takes ~45 s)
 
-> **No RF model?** The backend starts fine without `models/rf/rf_baseline.joblib`. All 5 other models (LightGBM, XGBoost, GRU, LSTM, ANN) load and serve predictions normally. RF predictions return an error until the file is placed manually.
+---
 
-### Frontend
+## Manual Setup (Frontend)
+
 ```bash
 cd frontend
 npm install
@@ -101,10 +122,155 @@ npm run dev
 # App: http://localhost:5173
 ```
 
-> The Vite dev server proxies `/api/*` to `http://127.0.0.1:8000` automatically — no `.env` needed for local development.
+> Vite proxies `/api/*` → `http://127.0.0.1:8000` automatically — no `.env` needed.
 
-### Windows one-click
-Double-click **`START_APP.bat`** at the project root — it launches both servers and opens the browser automatically.
+---
+
+## Git LFS Details
+
+The Random Forest model (`models/rf/rf_baseline.joblib`, 201 MB) is stored with Git LFS
+because it exceeds GitHub's 100 MB per-file limit. The remaining 5 models are committed
+directly to git as they are all under 2 MB.
+
+**Cloning with LFS (standard):**
+```bash
+git lfs install   # once per machine
+git clone <url>   # LFS downloads RF model automatically
+```
+
+**Cloning without LFS (LFS not installed):**
+```bash
+git clone <url>   # RF model is a 134-byte LFS pointer, NOT the real file
+```
+In this case, RF predictions will fail with a "model file not found" error.
+All other 5 models work normally. To get the RF model later: `git lfs pull`
+
+**Without running RF:**
+Edit `backend/.env` and set:
+```
+ENABLED_MODELS=["lightgbm","gru","xgboost","ann","lstm"]
+```
+
+---
+
+## Model Files
+
+| Model | File | Size | Storage |
+|-------|------|------|---------|
+| Random Forest | `models/rf/rf_baseline.joblib` | 201 MB | Git LFS |
+| LightGBM | `models/lightgbm/lightgbm_model.joblib` | 1.7 MB | Git |
+| XGBoost | `models/xgboost/xgboost_model.joblib` | 0.27 MB | Git |
+| GRU | `models/gru/gru_model.keras` | 0.34 MB | Git |
+| LSTM | `models/lstm/lstm_model.keras` | 0.43 MB | Git |
+| ANN | `models/ann/ann_model.keras` | 0.18 MB | Git |
+
+---
+
+## Project Structure
+
+```
+ZnO_Supercapacitor_AI_Platform/
+├── START_APP.bat           One-click launcher (Windows)
+├── STOP_APP.bat            One-click stopper (Windows)
+├── start_app.sh            Shell launcher (macOS / Linux)
+├── stop_app.sh             Shell stopper (macOS / Linux)
+├── launcher.py             Python launcher (starts backend + frontend)
+├── stop_app.py             Python stopper (reads .launcher.lock)
+│
+├── backend/
+│   ├── app/
+│   │   ├── main.py         FastAPI application factory
+│   │   ├── api/v1/         Route definitions (9 endpoint modules)
+│   │   ├── core/           Config, exceptions, model registry
+│   │   ├── services/       Prediction pipeline, preprocessing
+│   │   └── schemas/        Pydantic request/response models
+│   ├── requirements.txt    Python dependencies
+│   └── .env.example        Environment configuration template
+│
+├── frontend/
+│   ├── src/
+│   │   ├── pages/          9 route pages (Dashboard, Prediction, etc.)
+│   │   ├── components/     Reusable UI components
+│   │   ├── hooks/          React hooks (health, prediction, PWA)
+│   │   ├── store/          Redux state (prediction, UI)
+│   │   ├── api/            Axios client + endpoint functions
+│   │   └── types/          TypeScript type definitions
+│   ├── public/             Static assets + PWA manifest
+│   └── vite.config.ts      Vite build configuration
+│
+├── models/
+│   ├── rf/                 Random Forest (201 MB via Git LFS)
+│   ├── lightgbm/           LightGBM (1.7 MB)
+│   ├── xgboost/            XGBoost (0.27 MB)
+│   ├── gru/                GRU (0.34 MB)
+│   ├── lstm/               LSTM (0.43 MB)
+│   ├── ann/                ANN (0.18 MB)
+│   └── shared/             Scalers, feature config, model registry
+│
+├── data/
+│   └── processed/          master_long_format.parquet (experimental CV data)
+│
+└── research/
+    ├── metrics/            Per-model JSON metric files
+    ├── exports/            Benchmark summary JSON
+    ├── per_group_csv/      Per-group RMSE CSV files
+    ├── training_history/   Epoch-by-epoch training logs (JSON)
+    └── figures/            Publication figures (PNG)
+```
+
+---
+
+## API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/v1/health` | Liveness probe |
+| GET | `/api/v1/health/ready` | Readiness probe (hot models loaded?) |
+| GET | `/api/v1/health/system` | Uptime, cache stats, model sizes |
+| POST | `/api/v1/predict` | Single-model CV curve prediction |
+| POST | `/api/v1/compare` | Multi-model comparison |
+| GET | `/api/v1/models` | Registered model list |
+| GET | `/api/v1/metrics` | All model evaluation metrics |
+| GET | `/api/v1/metrics/{model_id}` | Single model metrics |
+| GET | `/api/v1/benchmarks/leaderboard` | Ranked leaderboard |
+| GET | `/api/v1/benchmarks/comparison` | Cross-partition comparison table |
+| GET | `/api/v1/benchmarks/summary` | Benchmark summary + key findings |
+| GET | `/api/v1/training-history` | All training curves |
+| GET | `/api/v1/training-history/{model_id}` | Single model training history |
+| GET | `/api/v1/experimental/{material}/{scan_rate}` | Experimental CV curve |
+| POST | `/api/v1/validation/compare` | Predicted vs experimental overlay |
+| GET | `/api/v1/validation/per-group/{model_id}` | Per-group RMSE heatmap data |
+
+---
+
+## Troubleshooting
+
+**RF model missing after clone**
+```
+git lfs pull
+```
+Or check that `git lfs install` was run before cloning.
+
+**`python` not recognised on Windows**
+Install from https://python.org/downloads — check "Add Python to PATH".
+
+**`node` not recognised**
+Install LTS from https://nodejs.org — use default options.
+
+**Backend port already in use**
+The launcher auto-selects a free port. If port 8000 is busy, the backend
+starts on the next available port automatically.
+
+**Frontend shows "Backend unreachable"**
+Wait 30–60 s for ML models to finish loading. The status badge turns green
+automatically once the backend is ready.
+
+**TensorFlow import error on first run**
+Run `pip install -r backend/requirements.txt` to install or update TF.
+
+**DLL load error on Windows after pip install**
+Run `START_APP.bat` again — it automatically unblocks `.pyd`/`.dll` files
+that Windows marks as downloaded-from-internet.
 
 ---
 
@@ -125,20 +291,6 @@ All notebooks live in `research/notebooks/`.
 
 ---
 
-## Model Files
-
-| Model | File | Size | Committed? |
-|---|---|---|---|
-| Random Forest | `models/rf/rf_baseline.joblib` | ~201 MB | ❌ — exceeds GitHub 100 MB limit |
-| LightGBM | `models/lightgbm/lightgbm_model.joblib` | 1.7 MB | ✓ |
-| XGBoost | `models/xgboost/xgboost_model.joblib` | 0.27 MB | ✓ |
-| GRU | `models/gru/gru_model.keras` | 0.34 MB | ✓ |
-| LSTM | `models/lstm/lstm_model.keras` | 0.43 MB | ✓ |
-| ANN | `models/ann/ann_model.keras` | 0.18 MB | ✓ |
-
-> Place `rf_baseline.joblib` manually in `models/rf/` after cloning to enable Random Forest predictions. All 5 other models work without it.
-
----
-
 ## License
+
 Academic use. All rights reserved.

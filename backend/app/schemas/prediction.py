@@ -10,7 +10,7 @@ VALID MATERIALS: NM1, NM2, NM3, NM4
 VALID SCAN RATES: 10, 20, 30, 40, 50, 60, 70, 80, 90, 100  (mV/s)
 """
 from pydantic import BaseModel, Field
-from typing import List, Literal
+from typing import List
 
 
 # ── Allowed values (used in validation and Swagger examples) ──────────────────

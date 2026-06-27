@@ -36,7 +36,7 @@ from app.services.analytics.experimental_loader import (
     VALID_SCAN_RATES,
 )
 from app.services.predictor import run_prediction
-from app.core.exceptions import InvalidInputError, ModelNotFoundError, ModelNotLoadedError
+from app.core.exceptions import InvalidInputError
 
 logger = logging.getLogger(__name__)
 
