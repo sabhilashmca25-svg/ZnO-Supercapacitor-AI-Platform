@@ -6,6 +6,7 @@ Vite/FastAPI projects without port conflicts.  Safe to double-click
 any number of times — a running instance is detected and its browser
 window is brought up instead of spawning duplicates.
 
+Cross-platform: works on Windows, macOS, and Linux.
 Lock file:  .launcher.lock   (auto-created, auto-removed by stop_app.py)
 """
 from __future__ import annotations
@@ -21,28 +22,53 @@ import urllib.request
 import webbrowser
 from pathlib import Path
 
-CHROME_PATHS = [
-    r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-    r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
-]
+IS_WINDOWS = sys.platform == "win32"
+
+# Chrome paths — Windows and macOS
+if IS_WINDOWS:
+    CHROME_PATHS = [
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+    ]
+else:
+    CHROME_PATHS = [
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "/Applications/Chromium.app/Contents/MacOS/Chromium",
+    ]
 
 
 def open_app_window(url: str) -> None:
     """Open URL in Chrome standalone app window; fall back to default browser."""
     for chrome in CHROME_PATHS:
         if Path(chrome).exists():
-            subprocess.Popen([chrome, f"--app={url}"],
-                             creationflags=subprocess.CREATE_NO_WINDOW)
+            kwargs: dict = {}
+            if IS_WINDOWS:
+                kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
+            subprocess.Popen([chrome, f"--app={url}"], **kwargs)
             return
     webbrowser.open(url)
+
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 ROOT         = Path(__file__).resolve().parent
 BACKEND_DIR  = ROOT / "backend"
 FRONTEND_DIR = ROOT / "frontend"
-VENV_PYTHON  = BACKEND_DIR / "venv" / "Scripts" / "python.exe"
 VITE_JS      = FRONTEND_DIR / "node_modules" / "vite" / "bin" / "vite.js"
-LOCK_FILE    = ROOT / ".launcher.lock"
+
+# Windows: prefer venv on C: drive (%LOCALAPPDATA%) to avoid Windows Application
+# Control blocking scipy/sklearn DLLs on non-system drives (D:\, E:\, etc.).
+# macOS/Linux: always use backend/venv/bin/python.
+if IS_WINDOWS:
+    _C_VENV = Path(os.environ.get("LOCALAPPDATA", "")) / "ZnO_Platform_venv"
+    VENV_PYTHON = (
+        _C_VENV / "Scripts" / "python.exe"
+        if (_C_VENV / "Scripts" / "python.exe").exists()
+        else BACKEND_DIR / "venv" / "Scripts" / "python.exe"
+    )
+else:
+    VENV_PYTHON = BACKEND_DIR / "venv" / "bin" / "python"
+
+LOCK_FILE = ROOT / ".launcher.lock"
 
 # ── Port search start ─────────────────────────────────────────────────────────
 BACKEND_PORT_START  = 8000
@@ -120,12 +146,19 @@ def clear_lock() -> None:
 # ──────────────────────────────────────────────────────────────────────────────
 
 def is_pid_alive(pid: int) -> bool:
-    """True if the Windows process with this PID is still running."""
-    r = subprocess.run(
-        ["tasklist", "/FI", f"PID eq {pid}", "/NH"],
-        capture_output=True, text=True,
-    )
-    return str(pid) in r.stdout
+    """True if the process with this PID is still running (cross-platform)."""
+    if IS_WINDOWS:
+        r = subprocess.run(
+            ["tasklist", "/FI", f"PID eq {pid}", "/NH"],
+            capture_output=True, text=True,
+        )
+        return str(pid) in r.stdout
+    else:
+        try:
+            os.kill(pid, 0)
+            return True
+        except OSError:
+            return False
 
 
 def check_existing() -> dict | None:
@@ -147,12 +180,14 @@ def check_existing() -> dict | None:
     return None
 
 
-def _hidden_si() -> subprocess.STARTUPINFO:
-    """STARTUPINFO that hides the console window entirely (no taskbar icon)."""
+def _popen_kwargs() -> dict:
+    """Extra Popen kwargs to hide console windows on Windows; empty on macOS/Linux."""
+    if not IS_WINDOWS:
+        return {}
     si = subprocess.STARTUPINFO()
     si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     si.wShowWindow = 0  # SW_HIDE
-    return si
+    return {"startupinfo": si, "creationflags": subprocess.CREATE_NO_WINDOW}
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -167,9 +202,10 @@ def launch_backend(backend_port: int, frontend_port: int) -> subprocess.Popen:
     frontend port, regardless of what is in backend/.env.
     """
     if not VENV_PYTHON.exists():
+        setup_cmd = "START_APP.bat" if IS_WINDOWS else "bash start_app.sh"
         sys.exit(
             f"\n  ERROR: Python virtual environment not found.\n"
-            f"  Close this window and run START_APP.bat — it installs\n"
+            f"  Close this window and run {setup_cmd} — it installs\n"
             f"  everything automatically on first run.\n"
         )
 
@@ -187,8 +223,7 @@ def launch_backend(backend_port: int, frontend_port: int) -> subprocess.Popen:
          "--host", "0.0.0.0", "--port", str(backend_port)],
         cwd=str(BACKEND_DIR),
         env=env,
-        startupinfo=_hidden_si(),
-        creationflags=subprocess.CREATE_NO_WINDOW,
+        **_popen_kwargs(),
     )
 
 
@@ -202,11 +237,12 @@ def launch_frontend(frontend_port: int, backend_port: int) -> subprocess.Popen:
     """
     node_exe = shutil.which("node")
     if node_exe is None:
-        sys.exit("\n  ERROR: 'node' not found in PATH.  Install Node.js.\n")
+        sys.exit("\n  ERROR: 'node' not found in PATH.  Install Node.js from https://nodejs.org\n")
     if not VITE_JS.exists():
+        setup_cmd = "START_APP.bat" if IS_WINDOWS else "bash start_app.sh"
         sys.exit(
             f"\n  ERROR: Frontend dependencies not installed.\n"
-            f"  Close this window and run START_APP.bat — it runs\n"
+            f"  Close this window and run {setup_cmd} — it runs\n"
             f"  npm install automatically on first run.\n"
         )
 
@@ -220,8 +256,7 @@ def launch_frontend(frontend_port: int, backend_port: int) -> subprocess.Popen:
         [node_exe, str(VITE_JS), "--port", str(frontend_port), "--host"],
         cwd=str(FRONTEND_DIR),
         env=env,
-        startupinfo=_hidden_si(),
-        creationflags=subprocess.CREATE_NO_WINDOW,
+        **_popen_kwargs(),
     )
 
 

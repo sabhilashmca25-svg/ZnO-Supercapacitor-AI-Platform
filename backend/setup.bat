@@ -3,7 +3,8 @@ REM ─────────────────────────�
 REM  ZnO Supercapacitor AI Platform — One-click Setup
 REM
 REM  WHAT THIS DOES:
-REM    1. Creates a Python virtual environment in backend/venv/
+REM    1. Creates a Python virtual environment in %LOCALAPPDATA%\ZnO_Platform_venv
+REM       (C: drive avoids Windows Application Control blocking DLLs on D:\)
 REM    2. Installs all required packages from requirements.txt
 REM
 REM  PREREQUISITES:
@@ -35,19 +36,23 @@ for /f "tokens=*" %%i in ('python --version') do echo  Found: %%i
 
 echo.
 
+set ZNO_VENV=%LOCALAPPDATA%\ZnO_Platform_venv
+
 REM Create venv if it doesn't exist
-if not exist "venv\Scripts\python.exe" (
-    echo  Creating virtual environment...
-    python -m venv venv
+if not exist "%ZNO_VENV%\Scripts\python.exe" (
+    echo  Creating virtual environment at:
+    echo    %ZNO_VENV%
+    python -m venv "%ZNO_VENV%"
     echo  Virtual environment created.
 ) else (
-    echo  Virtual environment already exists.
+    echo  Virtual environment already exists at:
+    echo    %ZNO_VENV%
 )
 
 echo.
 
 REM Activate and install
-call venv\Scripts\activate.bat
+call "%ZNO_VENV%\Scripts\activate.bat"
 echo  Installing packages from requirements.txt...
 echo  (TensorFlow is ~350 MB - this may take 10-30 minutes)
 echo.
@@ -69,7 +74,7 @@ echo   To start the server, run:
 echo     start_server.bat
 echo.
 echo   Or manually:
-echo     venv\Scripts\activate.bat
+echo     call %ZNO_VENV%\Scripts\activate.bat
 echo     uvicorn app.main:app --reload --port 8000
 echo  ============================================================
 echo.

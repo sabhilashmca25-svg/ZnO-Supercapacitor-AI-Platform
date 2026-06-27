@@ -144,7 +144,7 @@ async def lifespan(app: FastAPI):
         _run_warmup()
 
     logger.info("Swagger docs  → http://localhost:%s/docs", settings.API_PORT)
-    logger.info("Ready probe   → http://localhost:%s/api/v1/ready", settings.API_PORT)
+    logger.info("Ready probe   → http://localhost:%s/api/v1/health/ready", settings.API_PORT)
     logger.info("=" * 60)
 
     yield  # ← server runs here, handling requests
@@ -238,8 +238,8 @@ def root() -> dict:
             "swagger":  "/docs"    if settings.DOCS_ENABLED else "disabled",
             "redoc":    "/redoc"   if settings.DOCS_ENABLED else "disabled",
             "health":   "/api/v1/health",
-            "ready":    "/api/v1/ready",
-            "system":   "/api/v1/system",
+            "ready":    "/api/v1/health/ready",
+            "system":   "/api/v1/health/system",
             "predict":  "/api/v1/predict",
             "compare":  "/api/v1/compare",
             "metrics":  "/api/v1/metrics",

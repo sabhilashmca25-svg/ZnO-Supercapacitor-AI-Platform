@@ -1,11 +1,12 @@
 @echo off
 cd /d "%~dp0backend"
-if not exist "venv\Scripts\activate.bat" (
-    echo  ERROR: Virtual environment not found.
-    echo  Run START_APP.bat first to set up dependencies.
+set ZNO_VENV=%LOCALAPPDATA%\ZnO_Platform_venv
+if not exist "%ZNO_VENV%\Scripts\activate.bat" (
+    echo  ERROR: Virtual environment not found at %ZNO_VENV%
+    echo  Run FIX_VENV_WIN.bat (or START_APP.bat) from the project root first.
     pause
     exit /b 1
 )
-call venv\Scripts\activate.bat
+call "%ZNO_VENV%\Scripts\activate.bat"
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 pause

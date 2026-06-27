@@ -8,6 +8,10 @@ echo   ZnO Supercapacitor AI Platform  ^|  Setup ^& Launch
 echo  ================================================================
 echo.
 
+REM Venv lives on C: drive to avoid Windows Application Control blocking
+REM DLLs on non-system drives (scipy/sklearn .pyd files on D:\ are blocked).
+set ZNO_VENV=%LOCALAPPDATA%\ZnO_Platform_venv
+
 REM -- [1/5] Check Python -------------------------------------------
 echo  [1/5] Checking Python ...
 python --version >nul 2>&1
@@ -28,9 +32,9 @@ REM -- [2/5] Python virtual environment ----------------------------
 echo.
 echo  [2/5] Checking Python environment ...
 
-if not exist "backend\venv\Scripts\python.exe" (
-    echo   Creating virtual environment ...
-    python -m venv backend\venv
+if not exist "%ZNO_VENV%\Scripts\python.exe" (
+    echo   Creating virtual environment at %ZNO_VENV% ...
+    python -m venv "%ZNO_VENV%"
     if %errorlevel% neq 0 (
         echo  ERROR: Could not create virtual environment.
         pause
@@ -39,15 +43,15 @@ if not exist "backend\venv\Scripts\python.exe" (
 )
 
 REM Use goto to avoid nested-block errorlevel parse-time expansion bug
-backend\venv\Scripts\python.exe -c "import uvicorn" >nul 2>&1
+"%ZNO_VENV%\Scripts\python.exe" -c "import uvicorn" >nul 2>&1
 if %errorlevel% equ 0 goto :venv_ready
 
 echo   Installing packages ^(TensorFlow ~350MB, 10-30 min^) ...
 echo   If a Windows Security popup appears, click X to dismiss it.
 echo   Do NOT close this window.
 echo.
-backend\venv\Scripts\python.exe -m pip install --upgrade pip --quiet
-backend\venv\Scripts\python.exe -m pip install -r backend\requirements.txt
+"%ZNO_VENV%\Scripts\python.exe" -m pip install --upgrade pip --quiet
+"%ZNO_VENV%\Scripts\python.exe" -m pip install -r backend\requirements.txt
 if %errorlevel% neq 0 (
     echo.
     echo  ERROR: pip install failed. Check internet and try again.
@@ -55,14 +59,11 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 echo.
-echo   Removing Windows security flags from installed files ...
-powershell -ExecutionPolicy Bypass -WindowStyle Hidden -Command "Get-ChildItem 'backend\venv' -Recurse -File | Unblock-File -ErrorAction SilentlyContinue"
 echo   Python environment ready!
 goto :node_check
 
 :venv_ready
 echo   Already installed - skipping.
-powershell -ExecutionPolicy Bypass -WindowStyle Hidden -Command "Get-ChildItem 'backend\venv' -Recurse -File | Unblock-File -ErrorAction SilentlyContinue"
 
 REM -- [3/5] Check Node.js -----------------------------------------
 :node_check
@@ -116,7 +117,7 @@ echo   Stop app  : double-click STOP_APP.bat
 echo  ================================================================
 echo.
 
-backend\venv\Scripts\python.exe launcher.py
+"%ZNO_VENV%\Scripts\python.exe" launcher.py
 if %errorlevel% neq 0 (
     echo.
     echo  ERROR: Launcher failed. See details above.

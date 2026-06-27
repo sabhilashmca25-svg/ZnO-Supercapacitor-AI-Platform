@@ -185,7 +185,7 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
         <Tooltip title="Open Swagger API Docs" arrow>
           <IconButton
             component="a"
-            href="http://127.0.0.1:8000/docs"
+            href={`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/docs`}
             target="_blank"
             rel="noopener"
             size="small"

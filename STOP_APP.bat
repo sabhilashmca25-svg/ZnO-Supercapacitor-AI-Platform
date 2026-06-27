@@ -9,7 +9,10 @@ echo   ZnO Supercapacitor AI Platform  ^|  Stop
 echo  ================================================================
 echo.
 
-if exist "backend\venv\Scripts\python.exe" (
+set ZNO_VENV=%LOCALAPPDATA%\ZnO_Platform_venv
+if exist "%ZNO_VENV%\Scripts\python.exe" (
+    "%ZNO_VENV%\Scripts\python.exe" stop_app.py
+) else if exist "backend\venv\Scripts\python.exe" (
     backend\venv\Scripts\python.exe stop_app.py
 ) else (
     python stop_app.py 2>nul

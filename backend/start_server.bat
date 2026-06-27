@@ -6,8 +6,7 @@ REM  USAGE: Double-click this file OR run from terminal:
 REM     cd backend
 REM     start_server.bat
 REM
-REM  Requirements: Run "pip install -r requirements.txt" first
-REM  (or run setup.bat to do it automatically)
+REM  Requirements: Run START_APP.bat (or FIX_VENV_WIN.bat) first.
 REM ─────────────────────────────────────────────────────────────────
 
 echo.
@@ -16,16 +15,20 @@ echo   ZnO Supercapacitor AI Platform — Backend Server
 echo  ============================================================
 echo.
 
+set ZNO_VENV=%LOCALAPPDATA%\ZnO_Platform_venv
+
 REM Check that venv exists
-if not exist "venv\Scripts\activate.bat" (
-    echo  ERROR: Virtual environment not found.
-    echo  Please run setup.bat first to create the venv.
+if not exist "%ZNO_VENV%\Scripts\activate.bat" (
+    echo  ERROR: Virtual environment not found at:
+    echo    %ZNO_VENV%
+    echo.
+    echo  Run FIX_VENV_WIN.bat from the project root first.
     pause
     exit /b 1
 )
 
 REM Activate virtual environment
-call venv\Scripts\activate.bat
+call "%ZNO_VENV%\Scripts\activate.bat"
 
 echo  Virtual environment activated.
 echo  Starting FastAPI server on http://localhost:8000
