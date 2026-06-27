@@ -8,7 +8,7 @@ echo.
 powershell -NoProfile -Command "Write-Host '  ZnO Supercapacitor AI Platform  --  Setup and Launch' -ForegroundColor Cyan; Write-Host '  ============================================================' -ForegroundColor DarkCyan"
 echo.
 
-REM Venv lives on C: drive to avoid Windows Application Control blocking DLLs on D:\
+REM Venv lives on C: drive to avoid Windows App Control blocking DLLs on D:\
 set "ZNO_VENV=%LOCALAPPDATA%\ZnO_Platform_venv"
 set "FIRST_INSTALL=0"
 
@@ -80,20 +80,13 @@ REM ---- [3/5] Node.js ---------------------------------------------------------
 echo.
 powershell -NoProfile -Command "Write-Host '  [3/5] Checking Node.js ...' -ForegroundColor Cyan"
 
-REM Locate node.exe via where.exe (works even when PATH is partially broken)
-set "NODE_EXE="
-for /f "tokens=*" %%p in ('where.exe node.exe 2^>nul') do (
-    if not defined NODE_EXE set "NODE_EXE=%%p"
-)
-REM Fallback: check the standard install location directly
-if not defined NODE_EXE (
-    if exist "C:\Program Files\nodejs\node.exe" set "NODE_EXE=C:\Program Files\nodejs\node.exe"
-)
-if not defined NODE_EXE (
-    if exist "%LOCALAPPDATA%\Programs\nodejs\node.exe" set "NODE_EXE=%LOCALAPPDATA%\Programs\nodejs\node.exe"
-)
+REM File-existence check only - no execution, no errorlevel dependency
+set "NODE_DIR="
+if exist "C:\Program Files\nodejs\node.exe"        set "NODE_DIR=C:\Program Files\nodejs"
+if not defined NODE_DIR if exist "%LOCALAPPDATA%\Programs\nodejs\node.exe" set "NODE_DIR=%LOCALAPPDATA%\Programs\nodejs"
+if not defined NODE_DIR if exist "%APPDATA%\nvm\current\node.exe"          set "NODE_DIR=%APPDATA%\nvm\current"
 
-if not defined NODE_EXE (
+if not defined NODE_DIR (
     powershell -NoProfile -Command "Write-Host '  [ERROR] Node.js not found.' -ForegroundColor Red"
     echo.
     echo   Fix:
@@ -105,13 +98,8 @@ if not defined NODE_EXE (
     exit /b 1
 )
 
-REM Add Node's directory to PATH so npm.cmd is also found
-for %%f in ("!NODE_EXE!") do set "NODE_DIR=%%~dpf"
-set "PATH=!NODE_DIR!;%PATH%"
-
-for /f "tokens=*" %%v in ('"!NODE_EXE!" --version 2^>^&1') do set "NODE_VER=%%v"
-for /f "tokens=*" %%v in ('npm --version 2^>^&1')           do set "NPM_VER=%%v"
-powershell -NoProfile -Command "Write-Host ('  [OK] Node.js ' + $env:NODE_VER + '   npm v' + $env:NPM_VER) -ForegroundColor Green"
+set "PATH=!NODE_DIR!;!PATH!"
+powershell -NoProfile -Command "Write-Host '  [OK] Node.js found.' -ForegroundColor Green"
 
 REM ---- [4/5] Frontend packages ------------------------------------------------
 echo.
@@ -144,7 +132,7 @@ REM ---- First-time install complete -------------------------------------------
 :launch
 if !FIRST_INSTALL! equ 1 (
     echo.
-    powershell -NoProfile -Command "Write-Host '  ============================================================' -ForegroundColor Green; Write-Host '  First-time installation completed successfully.' -ForegroundColor Green; Write-Host '  Launching application ...' -ForegroundColor Green; Write-Host '  ============================================================' -ForegroundColor Green"
+    powershell -NoProfile -Command "Write-Host '  ============================================================' -ForegroundColor Green; Write-Host '  First-time installation complete.' -ForegroundColor Green; Write-Host '  Launching application ...' -ForegroundColor Green; Write-Host '  ============================================================' -ForegroundColor Green"
 )
 echo.
 

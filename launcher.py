@@ -50,15 +50,8 @@ else:
 
 
 def open_app_window(url: str) -> None:
-    """Open URL in Chrome standalone app window; fall back to default browser."""
-    for chrome in CHROME_PATHS:
-        if Path(chrome).exists():
-            kwargs: dict = {}
-            if IS_WINDOWS:
-                kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
-            subprocess.Popen([chrome, f"--app={url}"], **kwargs)
-            return
-    webbrowser.open(url)
+    """Open URL in the system default browser."""
+    webbrowser.open_new_tab(url)
 
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
