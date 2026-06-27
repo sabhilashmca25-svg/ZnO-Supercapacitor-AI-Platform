@@ -1,23 +1,23 @@
-# â”€â”€ Line endings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Line endings
 # Enforce LF line endings for all text files on all platforms.
 * text=auto eol=lf
 # Windows batch files must use CRLF
 *.bat text eol=crlf
 
-# â”€â”€ Binary files â€” diff disabled â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Binary files -- diff disabled
 # These are binary formats; git stores them as blobs, no text diff needed.
-*.joblib binary
-*.keras  binary
+*.joblib  binary
+*.keras   binary
 *.parquet binary
-*.png    binary
-*.jpg    binary
-*.ico    binary
-*.woff2  binary
-*.xlsx   binary
+*.png     binary
+*.jpg     binary
+*.ico     binary
+*.woff2   binary
+*.xlsx    binary
 
 # NOTE: Git LFS is NOT configured here.
 # All model files committed to this repo are < 2 MB and are tracked normally.
-# The RF model (211 MB) is gitignored entirely â€” see .gitignore.
+# The RF model (211 MB) is gitignored entirely -- see .gitignore.
 # If you need to add RF to git in the future, use:
 #   git lfs track "models/rf/*.joblib"
 # and update .gitignore to un-ignore models/rf/*.joblib.

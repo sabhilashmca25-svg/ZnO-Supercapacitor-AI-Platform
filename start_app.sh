@@ -36,8 +36,8 @@ if [ ! -f "$VENV_PY" ]; then
 fi
 
 if ! "$VENV_PY" -c "import uvicorn" &>/dev/null 2>&1; then
-    echo "  Installing packages (TensorFlow ~350MB, 10-30 min) ..."
-    echo "  Do NOT close this window."
+    echo "  Installing packages (TensorFlow ~350MB, may take 10-30 min) ..."
+    echo "  Please wait and do NOT close this terminal."
     echo ""
     "$VENV_PY" -m pip install --upgrade pip --quiet
     "$VENV_PY" -m pip install -r "$SCRIPT_DIR/backend/requirements.txt"
@@ -66,7 +66,7 @@ echo "  Found: npm v$(npm --version)"
 echo ""
 echo " [4/5] Checking frontend dependencies ..."
 if [ ! -f "$SCRIPT_DIR/frontend/node_modules/vite/bin/vite.js" ]; then
-    echo "  Running npm install (5-15 min on first run) ..."
+    echo "  Running npm install (2-10 min on first run) ..."
     echo ""
     pushd "$SCRIPT_DIR/frontend" > /dev/null
     npm install
@@ -81,9 +81,39 @@ fi
 echo ""
 echo " ================================================================"
 echo "  Starting application ..."
-echo "  Browser opens automatically (backend loads ML models ~45 sec)."
-echo "  Stop app: press Ctrl+C in this terminal"
+echo "  Browser opens automatically."
+echo "  Backend loads ML models in ~30-60 seconds."
+echo "  To stop the app: press Ctrl+C or run: python3 stop_app.py"
 echo " ================================================================"
 echo ""
 
+# Trap Ctrl+C so we cleanly stop the backend and frontend
+cleanup() {
+    echo ""
+    echo " Stopping application ..."
+    "$VENV_PY" "$SCRIPT_DIR/stop_app.py" 2>/dev/null || true
+    echo " Done."
+    exit 0
+}
+trap cleanup INT TERM
+
+# Launch the app (launcher.py starts backend + frontend, then returns)
 "$VENV_PY" "$SCRIPT_DIR/launcher.py"
+
+echo ""
+echo " ================================================================"
+echo "  Application is running."
+echo "  Open browser at:  http://localhost:5173"
+echo "  Press Ctrl+C to stop the application."
+echo " ================================================================"
+echo ""
+
+# Keep this script alive so Ctrl+C is caught
+while true; do
+    sleep 30
+    # Exit if launcher lock is gone (app was stopped externally)
+    if [ ! -f "$SCRIPT_DIR/.launcher.lock" ]; then
+        echo " Application has stopped."
+        break
+    fi
+done
