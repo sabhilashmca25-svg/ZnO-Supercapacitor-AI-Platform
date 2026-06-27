@@ -7,6 +7,42 @@
 
 ---
 
+> [!IMPORTANT]
+> ## Before You Clone — Install These Three Things First
+>
+> You need **all three** installed on your machine before cloning.
+> Missing any one of them will prevent the app from running.
+>
+> ### 1. Python 3.11 or newer
+> - Download from **https://python.org/downloads**
+> - During installation, **tick the "Add Python to PATH" checkbox** — without this, nothing works
+> - Python 3.10 and older are **NOT supported** (TensorFlow 2.18 requires Python 3.11+)
+>
+> ### 2. Node.js LTS
+> - Download from **https://nodejs.org** — choose the **LTS** version
+> - Use default installation options
+>
+> ### 3. Git LFS (Large File Storage) — easy to miss!
+> - Download from **https://git-lfs.com** and install it
+> - Then open a terminal and run: `git lfs install`
+> - **Why:** The Random Forest model is 201 MB — too large for regular Git.
+>   It is stored via Git LFS. If you clone without Git LFS installed,
+>   you get a 133-byte placeholder file instead of the real model,
+>   and RF predictions will silently fail.
+>
+> ---
+>
+> **After installing all three, clone and run:**
+> ```bash
+> git lfs install
+> git clone https://github.com/sabhilashmca25-svg/ZnO-Supercapacitor-AI-Platform.git
+> cd ZnO-Supercapacitor-AI-Platform
+> ```
+> Then double-click **`START_APP.bat`** (Windows).
+> The first launch downloads ~500 MB of packages automatically — keep internet on.
+
+---
+
 ## What This Platform Does
 
 - **Predict** full CV current–voltage trajectories for ZnO supercapacitors using 6 ML models
@@ -32,38 +68,54 @@
 
 ## System Requirements
 
-| Tool | Minimum | Notes |
-|------|---------|-------|
-| Python | 3.11 | 3.13 supported; TF 2.18+ required |
-| Node.js | 18 LTS | 20 LTS recommended |
-| Git | 2.38+ | With **Git LFS** extension |
-| Git LFS | 3.0+ | Required to download RF model |
-| RAM | 8 GB | 16 GB recommended (RF loads ~4 GB) |
-| OS | Windows 10 / macOS 12 / Ubuntu 20.04 | |
+| Tool | Minimum | Why it matters |
+|------|---------|----------------|
+| **Python 3.11+** | 3.11 (3.13 supported) | TensorFlow 2.18 does not support Python 3.10 or older — install will fail |
+| **Node.js LTS** | 18 LTS | Runs the React frontend dev server |
+| **Git LFS** | Any | RF model is 201 MB; without LFS you get a broken placeholder file |
+| RAM | 8 GB | 16 GB recommended — RF model occupies ~4 GB when loaded |
+| OS | Windows 10+ / macOS 12+ / Ubuntu 20.04+ | `START_APP.bat` is Windows only; use `start_app.sh` on Mac/Linux |
 
-> **Git LFS is required.** The Random Forest model (201 MB) is stored via Git Large File Storage.
-> Run `git lfs install` once per machine **before** cloning.
+> [!CAUTION]
+> **Python 3.10 and below will not work.** `pip install -r requirements.txt` will fail
+> because TensorFlow 2.18 only supports Python 3.11, 3.12, and 3.13.
 
 ---
 
 ## Quick Start (Windows — Recommended)
 
-```
-1. Install Git LFS (one-time, per machine):
-   https://git-lfs.com
+> [!WARNING]
+> Complete **all steps below in order**. Skipping step 1 or 2 means the app will not start correctly.
 
-2. Clone the repository (LFS downloads RF model automatically):
-   git lfs install
-   git clone <repository-url>
-   cd ZnO_Supercapacitor_AI_Platform
+**Step 1 — Install prerequisites (one-time, do this before anything else)**
 
-3. Double-click START_APP.bat
-   - Creates Python virtual environment automatically
-   - Installs all Python packages (TensorFlow ~350 MB, first run only)
-   - Installs all Node.js packages (first run only)
-   - Starts backend + frontend
-   - Opens browser at http://localhost:5173
+| What | Where | Notes |
+|------|-------|-------|
+| Python 3.11+ | https://python.org/downloads | Tick **"Add Python to PATH"** during install |
+| Node.js LTS | https://nodejs.org | Use default options |
+| Git LFS | https://git-lfs.com | Then run `git lfs install` in a terminal |
+
+**Step 2 — Clone the repository**
+
+```bash
+git lfs install
+git clone https://github.com/sabhilashmca25-svg/ZnO-Supercapacitor-AI-Platform.git
+cd ZnO-Supercapacitor-AI-Platform
 ```
+
+> `git lfs install` must be run **before** `git clone`, not after.
+> Cloning without it downloads a 133-byte pointer instead of the 201 MB RF model.
+
+**Step 3 — Launch**
+
+Double-click **`START_APP.bat`**
+
+On first launch it will automatically:
+- Create a Python virtual environment
+- Install all Python packages (TensorFlow ~350 MB — takes 10–30 min on slow connections)
+- Install all Node.js packages (~2 min)
+- Start the backend and frontend
+- Open the app in your browser at `http://localhost:5173`
 
 **To stop:** double-click `STOP_APP.bat`
 
