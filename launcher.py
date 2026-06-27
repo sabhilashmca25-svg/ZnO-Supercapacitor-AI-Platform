@@ -24,6 +24,18 @@ from pathlib import Path
 
 IS_WINDOWS = sys.platform == "win32"
 
+# Enable VT100/ANSI colours on Windows 10+ CMD (no-op on macOS/Linux)
+if IS_WINDOWS:
+    os.system("")
+
+GRN = "\033[92m"
+CYN = "\033[96m"
+YLW = "\033[93m"
+RED = "\033[91m"
+DIM = "\033[90m"
+BLD = "\033[1m"
+RST = "\033[0m"
+
 # Chrome paths — Windows and macOS
 if IS_WINDOWS:
     CHROME_PATHS = [
@@ -266,16 +278,19 @@ def launch_frontend(frontend_port: int, backend_port: int) -> subprocess.Popen:
 
 def log(label: str, value: str = "") -> None:
     if value:
-        print(f"  {label:<14} {value}")
+        ok = value.startswith("READY") or value.startswith("Opened") or value.startswith("Loaded")
+        err = value.startswith("TIMEOUT") or value.startswith("ERROR")
+        val_color = GRN if ok else (RED if err else RST)
+        print(f"  {CYN}{label:<22}{RST} {val_color}{value}{RST}")
     else:
-        print(f"  {label}")
+        print(f"  {YLW}{label}{RST}")
 
 
 def main() -> None:
     print()
-    print(SEP)
-    print("  ZnO Supercapacitor AI Platform")
-    print(SEP)
+    print(f"{BLD}{CYN}{SEP}{RST}")
+    print(f"{BLD}{CYN}  ZnO Supercapacitor AI Platform{RST}")
+    print(f"{BLD}{CYN}{SEP}{RST}")
     print()
 
     # ── STEP 1: Detect existing instance ──────────────────────────────────────
@@ -283,7 +298,7 @@ def main() -> None:
     if existing:
         fp = existing["frontend_port"]
         bp = existing["backend_port"]
-        print("  Already running -- reopening browser")
+        print(f"  {YLW}Already running — reopening browser{RST}")
         print()
         log("Backend",  f"http://localhost:{bp}")
         log("Frontend", f"http://localhost:{fp}")
@@ -294,7 +309,7 @@ def main() -> None:
         return
 
     # ── STEP 2 & 3: Find available ports ──────────────────────────────────────
-    log("Scanning ports ...")
+    log("Scanning for free ports ...")
     backend_port  = find_free_port(BACKEND_PORT_START)
     frontend_port = find_free_port(FRONTEND_PORT_START)
     print()
@@ -327,20 +342,20 @@ def main() -> None:
     print()
 
     # ── STEP 7b: Wait for backend (slow — RF model ~45 s) ────────────────────
-    log("Waiting for backend ML models (~45 s) ...")
+    log("Waiting for backend ML models (up to 60 s) ...")
     be_url = f"http://localhost:{backend_port}/api/v1/health"
     be_ok  = wait_for_url(be_url, BACKEND_TIMEOUT, 2.0)
     log("Backend", "READY" if be_ok else "TIMEOUT — check backend window")
 
     # ── STEP 9: Final summary ─────────────────────────────────────────────────
     print()
-    print(SEP)
+    print(f"{BLD}{GRN}{SEP}{RST}")
     log("Backend",  f"http://localhost:{backend_port}")
     log("Frontend", f"http://localhost:{frontend_port}")
     log("API",      "READY" if be_ok else "STILL LOADING — page updates automatically")
-    log("Models",   "Loaded" if be_ok else "Loading ...")
+    log("Models",   "Loaded" if be_ok else "Loading in background ...")
     log("Browser",  "Opened")
-    print(SEP)
+    print(f"{BLD}{GRN}{SEP}{RST}")
     print()
 
 

@@ -1,139 +1,182 @@
 @echo off
-title ZnO Supercapacitor AI Platform - Setup and Start
+setlocal EnableDelayedExpansion
+chcp 65001 >nul 2>&1
+
+REM ── Enable ANSI/VT100 colours (Windows 10 1607+) ──────────────────────────────
+for /f %%a in ('echo prompt $E^| cmd /k exit') do set "ESC=%%a"
+set "GRN=!ESC![92m"
+set "CYN=!ESC![96m"
+set "YLW=!ESC![93m"
+set "RED=!ESC![91m"
+set "DIM=!ESC![90m"
+set "BLD=!ESC![1m"
+set "RST=!ESC![0m"
+
+title ZnO Supercapacitor AI Platform
 cd /d "%~dp0"
 
 echo.
-echo  ================================================================
-echo   ZnO Supercapacitor AI Platform  ^|  Setup ^& Launch
-echo  ================================================================
+echo !BLD!!CYN! ================================================================!RST!
+echo !BLD!!CYN!   ZnO Supercapacitor AI Platform  ^|  Setup ^& Launch!RST!
+echo !BLD!!CYN! ================================================================!RST!
 echo.
 
-REM Venv lives on C: drive to avoid Windows Application Control blocking
-REM DLLs on non-system drives (scipy/sklearn .pyd files on D:\ are blocked).
-set ZNO_VENV=%LOCALAPPDATA%\ZnO_Platform_venv
+REM Venv on C: drive avoids Windows Application Control blocking DLLs on D:\
+set "ZNO_VENV=%LOCALAPPDATA%\ZnO_Platform_venv"
+set "FIRST_INSTALL=0"
 
-REM -- [1/5] Check Python -------------------------------------------
-echo  [1/5] Checking Python ...
+REM ── [1/5] Python ─────────────────────────────────────────────────────────────
+echo !CYN!  >> Checking Python ...!RST!
 python --version >nul 2>&1
-if %errorlevel% neq 0 (
+if !errorlevel! neq 0 (
+    echo !RED!  [ERROR] Python is not installed or not in PATH.!RST!
     echo.
-    echo  ERROR: Python is not installed or not found in PATH.
-    echo.
-    echo  1. Go to https://python.org/downloads
-    echo  2. Download Python 3.11 or newer
-    echo  3. During install, CHECK "Add Python to PATH"
-    echo  4. Restart your computer, then re-run START_APP.bat
+    echo         Fix:
+    echo           1. Go to https://python.org/downloads
+    echo           2. Download Python 3.11 or newer
+    echo           3. During install, CHECK "Add Python to PATH"
+    echo           4. Restart your computer
+    echo           5. Re-run START_APP.bat
     echo.
     pause
     exit /b 1
 )
-for /f "tokens=*" %%v in ('python --version 2^>^&1') do echo   Found: %%v
+for /f "tokens=*" %%v in ('python --version 2^>^&1') do set "PY_VER=%%v"
+echo !GRN!  [OK] !PY_VER!!RST!
 
-REM -- [2/5] Python virtual environment ----------------------------
+REM ── [2/5] Virtual environment ─────────────────────────────────────────────────
 echo.
-echo  [2/5] Checking Python environment ...
+echo !CYN!  >> Checking virtual environment ...!RST!
 
 if not exist "%ZNO_VENV%\Scripts\python.exe" (
-    echo   Creating virtual environment at %ZNO_VENV% ...
+    echo !YLW!       Creating virtual environment at!RST!
+    echo !DIM!       %ZNO_VENV%!RST!
     python -m venv "%ZNO_VENV%"
-    if %errorlevel% neq 0 (
+    if !errorlevel! neq 0 (
+        echo !RED!  [ERROR] Could not create virtual environment.!RST!
         echo.
-        echo  ERROR: Could not create virtual environment.
-        echo  Make sure Python 3.11 or newer is installed.
+        echo         Fix: Make sure Python 3.11 or newer is installed.
+        echo         Command: python -m venv "%ZNO_VENV%"
+        echo.
         pause
         exit /b 1
     )
+    set "FIRST_INSTALL=1"
 )
 
-REM Use goto to avoid nested-block errorlevel parse-time expansion bug
+REM Check if packages are installed
 "%ZNO_VENV%\Scripts\python.exe" -c "import uvicorn" >nul 2>&1
-if %errorlevel% equ 0 goto :venv_ready
+if !errorlevel! equ 0 goto :venv_ready
 
-echo   Installing packages ^(TensorFlow ~350MB, may take 10-30 min^) ...
-echo   Please wait and do NOT close this window.
+echo !YLW!       Installing Python packages!RST!
+echo !DIM!       (TensorFlow ~350 MB — 10-30 min on first run)!RST!
+echo !DIM!       Please wait. Do NOT close this window.!RST!
 echo.
 "%ZNO_VENV%\Scripts\python.exe" -m pip install --upgrade pip --quiet
 "%ZNO_VENV%\Scripts\python.exe" -m pip install -r backend\requirements.txt
-if %errorlevel% neq 0 (
+if !errorlevel! neq 0 (
     echo.
-    echo  ERROR: pip install failed.
-    echo  Check internet connection and try again.
+    echo !RED!  [ERROR] pip install failed.!RST!
+    echo.
+    echo         Command: pip install -r backend\requirements.txt
+    echo         Fix: Check internet connection and try again.
+    echo.
     pause
     exit /b 1
 )
-
-REM Unblock DLLs from Zone.Identifier restriction (some Windows security policies)
+REM Unblock DLLs (removes Zone.Identifier on downloaded files)
 echo.
-echo   Unblocking Python extension files ...
+echo !DIM!       Unblocking extension files ...!RST!
 powershell -NoProfile -Command "Get-ChildItem '%ZNO_VENV%' -Recurse -Include '*.pyd','*.dll' | Unblock-File" 2>nul
-echo.
-echo   Python environment ready!
+echo !GRN!  [OK] Python packages installed.!RST!
+set "FIRST_INSTALL=1"
 goto :node_check
 
 :venv_ready
-echo   Already installed - skipping.
+echo !GRN!  [OK] Python packages already installed.!RST!
 
-REM -- [3/5] Check Node.js -----------------------------------------
+REM ── [3/5] Node.js ─────────────────────────────────────────────────────────────
 :node_check
 echo.
-echo  [3/5] Checking Node.js ...
+echo !CYN!  >> Checking Node.js ...!RST!
 node --version >nul 2>&1
-if %errorlevel% neq 0 (
+if !errorlevel! neq 0 (
+    echo !RED!  [ERROR] Node.js not found.!RST!
     echo.
-    echo  ERROR: Node.js not found.
-    echo.
-    echo  1. Go to https://nodejs.org  ^(LTS version^)
-    echo  2. Install with default options
-    echo  3. Re-run START_APP.bat
+    echo         Fix:
+    echo           1. Go to https://nodejs.org  (choose LTS version)
+    echo           2. Install with default options
+    echo           3. Re-run START_APP.bat
     echo.
     pause
     exit /b 1
 )
-for /f "tokens=*" %%v in ('node --version 2^>^&1') do echo   Found: Node.js %%v
-for /f "tokens=*" %%v in ('npm --version 2^>^&1')  do echo   Found: npm v%%v
+for /f "tokens=*" %%v in ('node --version 2^>^&1') do set "NODE_VER=%%v"
+for /f "tokens=*" %%v in ('npm --version 2^>^&1')  do set "NPM_VER=%%v"
+echo !GRN!  [OK] Node.js !NODE_VER!   npm v!NPM_VER!!RST!
 
-REM -- [4/5] Frontend dependencies ---------------------------------
+REM ── [4/5] Frontend packages ───────────────────────────────────────────────────
 echo.
-echo  [4/5] Checking frontend dependencies ...
+echo !CYN!  >> Checking frontend packages ...!RST!
 if exist "frontend\node_modules\vite\bin\vite.js" goto :npm_ready
 
-echo   Running npm install ^(2-10 min on first run^) ...
+echo !YLW!       Running npm install!RST!
+echo !DIM!       (2-10 min on first run)!RST!
+echo !DIM!       Please wait. Do NOT close this window.!RST!
 echo.
 pushd frontend
-npm install
-if %errorlevel% neq 0 (
+call npm install
+if !errorlevel! neq 0 (
     popd
     echo.
-    echo  ERROR: npm install failed.
-    echo  Check internet connection and try again.
+    echo !RED!  [ERROR] npm install failed.!RST!
+    echo.
+    echo         Command: npm install  (in frontend/)
+    echo         Fix: Check internet connection and try again.
+    echo.
     pause
     exit /b 1
 )
 popd
-echo.
-echo   Frontend ready!
+echo !GRN!  [OK] Frontend packages installed.!RST!
+set "FIRST_INSTALL=1"
 goto :launch
 
 :npm_ready
-echo   Already installed - skipping.
+echo !GRN!  [OK] Frontend packages already installed.!RST!
 
-REM -- [5/5] Launch ------------------------------------------------
+REM ── First-time install complete ───────────────────────────────────────────────
 :launch
+if !FIRST_INSTALL! equ 1 (
+    echo.
+    echo !GRN! ================================================================!RST!
+    echo !GRN!  First-time installation completed successfully.!RST!
+    echo !GRN!  Launching application ...!RST!
+    echo !GRN! ================================================================!RST!
+)
 echo.
-echo  ================================================================
-echo   Starting application ...
-echo   Browser opens automatically.
-echo   Backend loads ML models in ~30-60 seconds.
-echo   Local URL : http://localhost:5173
-echo   Stop app  : double-click STOP_APP.bat
-echo  ================================================================
+
+REM ── [5/5] Launch ──────────────────────────────────────────────────────────────
+echo !CYN!  >> Starting application ...!RST!
+echo !DIM!       Browser opens automatically.!RST!
+echo !DIM!       Backend loads ML models in ~30-60 seconds.!RST!
+echo !DIM!       To stop: double-click STOP_APP.bat!RST!
 echo.
 
 "%ZNO_VENV%\Scripts\python.exe" launcher.py
-if %errorlevel% neq 0 (
+if !errorlevel! neq 0 (
     echo.
-    echo  ERROR: Launcher failed. See details above.
+    echo !RED!  [ERROR] Launcher failed.!RST!
+    echo.
+    echo         Command: "%ZNO_VENV%\Scripts\python.exe" launcher.py
+    echo         See error details above.
+    echo.
     pause
     exit /b 1
 )
+
+echo.
+echo !GRN!  Application is running. Browser window should be open.!RST!
+echo !DIM!  Close this window any time — the app keeps running.!RST!
+echo.
 pause

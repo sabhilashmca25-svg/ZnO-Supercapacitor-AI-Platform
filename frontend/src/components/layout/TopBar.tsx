@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -8,12 +8,15 @@ import {
   Chip,
   Tooltip,
   alpha,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import {
   MenuRounded,
   OpenInNewRounded,
   FiberManualRecordRounded,
   GetAppRounded,
+  TerminalRounded,
 } from "@mui/icons-material";
 import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -41,10 +44,20 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
   const { health } = useHealth(60_000);
 
   const { canInstall, install } = usePWAInstall();
+  const [devToolsOpen, setDevToolsOpen] = useState(false);
 
   const pageTitle = PAGE_TITLES[pathname] ?? "ZnO AI Platform";
   const isOnline = health?.status === "ok";
   const modelsLoaded = health?.models_loaded ?? [];
+
+  const handleOpenInBrowser = () => {
+    window.open(window.location.href, "_blank", "noopener,noreferrer");
+  };
+
+  const handleOpenDevTools = () => {
+    window.open(window.location.href, "_blank", "noopener,noreferrer");
+    setDevToolsOpen(true);
+  };
 
   return (
     <AppBar
@@ -181,13 +194,10 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
           </Tooltip>
         )}
 
-        {/* ── Swagger link — hidden on mobile ─────────────────────── */}
-        <Tooltip title="Open Swagger API Docs" arrow>
+        {/* ── Open in browser — hidden on mobile ──────────────────── */}
+        <Tooltip title="Open in browser" arrow>
           <IconButton
-            component="a"
-            href={`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/docs`}
-            target="_blank"
-            rel="noopener"
+            onClick={handleOpenInBrowser}
             size="small"
             sx={{
               ml: 0.75,
@@ -199,7 +209,51 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
             <OpenInNewRounded sx={{ fontSize: 16 }} />
           </IconButton>
         </Tooltip>
+
+        {/* ── Developer Tools — hidden on mobile ──────────────────── */}
+        <Tooltip title="Open Developer Tools" arrow>
+          <IconButton
+            onClick={handleOpenDevTools}
+            size="small"
+            sx={{
+              ml: 0.5,
+              color: "rgba(167,139,250,0.5)",
+              display: { xs: "none", sm: "flex" },
+              "&:hover": { color: "#a78bfa" },
+            }}
+          >
+            <TerminalRounded sx={{ fontSize: 16 }} />
+          </IconButton>
+        </Tooltip>
       </Toolbar>
+
+      {/* ── DevTools keyboard shortcut instructions ──────────────── */}
+      <Snackbar
+        open={devToolsOpen}
+        autoHideDuration={7000}
+        onClose={() => setDevToolsOpen(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        sx={{ top: { xs: 60, sm: 64 } }}
+      >
+        <Alert
+          onClose={() => setDevToolsOpen(false)}
+          severity="info"
+          variant="filled"
+          sx={{
+            backgroundColor: "#1e1b4b",
+            border: "1px solid rgba(167,139,250,0.4)",
+            color: "#e2e8f0",
+            "& .MuiAlert-icon": { color: "#a78bfa" },
+            "& .MuiAlert-action .MuiIconButton-root": { color: "#94a3b8" },
+          }}
+        >
+          <strong>Open Developer Tools in the new window:</strong>
+          <br />
+          Windows / Linux: &nbsp;<strong>F12</strong>&nbsp; or &nbsp;<strong>Ctrl + Shift + I</strong>
+          <br />
+          macOS: &nbsp;<strong>Cmd + Option + I</strong>
+        </Alert>
+      </Snackbar>
     </AppBar>
   );
 }
