@@ -43,7 +43,6 @@ from app.core.exceptions import (
     ModelNotFoundError,
     ModelNotLoadedError,
     InvalidInputError,
-    PreprocessingError,
     model_not_found_handler,
     model_not_loaded_handler,
     invalid_input_handler,
