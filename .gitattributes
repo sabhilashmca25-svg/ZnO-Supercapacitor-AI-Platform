@@ -5,7 +5,7 @@
 *.bat text eol=crlf
 
 # Binary files -- diff disabled
-# These are binary formats; git stores them as blobs, no text diff needed.
+# These are binary formats; git stores them as blobs (or LFS pointers).
 *.joblib  binary
 *.keras   binary
 *.parquet binary
@@ -15,9 +15,7 @@
 *.woff2   binary
 *.xlsx    binary
 
-# NOTE: Git LFS is NOT configured here.
-# All model files committed to this repo are < 2 MB and are tracked normally.
-# The RF model (211 MB) is gitignored entirely -- see .gitignore.
-# If you need to add RF to git in the future, use:
-#   git lfs track "models/rf/*.joblib"
-# and update .gitignore to un-ignore models/rf/*.joblib.
+# Git LFS -- large RF model stored via Large File Storage
+# Requires: git lfs install  (once per machine, before cloning)
+# GitHub automatically serves LFS files on clone.
+models/rf/*.joblib filter=lfs diff=lfs merge=lfs -text

@@ -32,18 +32,22 @@ logs/
 #  ML MODEL FILES
 #
 #  Commit strategy:
-#   SMALL models (< 2 MB each) → committed directly to git
-#     These are REQUIRED by the Render backend to run inference.
+#   ALL models → committed via git (small) or Git LFS (RF)
 #
-#   RF model (211 MB compressed) → gitignored
-#     Too large for GitHub (100 MB per-file limit).
-#     RF is excluded from ENABLED_MODELS on Render free tier.
-#     To use RF on a paid plan: upload manually to Render disk
-#     or use Git LFS on a paid GitHub plan.
+#   Small models (< 2 MB each) → committed directly to git:
+#     lightgbm_model.joblib (1.7 MB)
+#     xgboost_model.joblib  (0.27 MB)
+#     ann_model.keras       (0.18 MB)
+#     gru_model.keras       (0.34 MB)
+#     lstm_model.keras      (0.43 MB)
+#
+#   RF model (201 MB) → tracked via Git LFS
+#     Requires:  git lfs install   (once per machine)
+#     Then:      git clone <repo>  (LFS downloads automatically)
+#     See .gitattributes for the LFS tracking rule.
 # ════════════════════════════════════════════════════════════════
 
-# RF baseline — 211 MB compressed (too large for GitHub)
-models/rf/*.joblib
+# RF backups — gitignored (LFS handles the real model file)
 models/rf/*.backup
 
 # Auxiliary model text dumps — NOT loaded by the backend at runtime

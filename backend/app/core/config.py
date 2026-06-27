@@ -77,10 +77,9 @@ class Settings(BaseSettings):
     # ── Models to load at startup ────────────────────────────────────────────
     # Format: JSON array  →  ["rf","lightgbm","gru"]
     # All 6 options: "rf", "lightgbm", "gru", "xgboost", "ann", "lstm"
-    # NOTE: "rf" is excluded from the default because models/rf/rf_baseline.joblib
-    # is not committed to git (211 MB, above GitHub's 100 MB limit).
-    # Add "rf" here (or in backend/.env) only if you have placed the file manually.
-    ENABLED_MODELS: List[str] = ["lightgbm", "gru", "xgboost", "ann", "lstm"]
+    # RF (201 MB) is distributed via Git LFS — it is available after clone.
+    # Requires:  git lfs install   (once per machine, before git clone)
+    ENABLED_MODELS: List[str] = ["rf", "lightgbm", "gru", "xgboost", "ann", "lstm"]
 
     # ── Model display order for leaderboard / metrics responses ──────────────
     MODEL_ORDER: List[str] = ["rf", "lightgbm", "xgboost", "gru", "lstm", "ann"]
